@@ -16,6 +16,6 @@ public class App1Service {
     
     public String getHelloFromApp1() {
         // The service name "app1" is used as the hostname within Docker network
-        return restTemplate.getForObject("http://spring-app-1:8081/api/hello", String.class);
+        return restTemplate.getForObject("http://spring-app-2-service.default.svc.cluster.local:8080/api/hello", String.class);
     }
 }

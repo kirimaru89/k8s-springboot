@@ -1,10 +1,11 @@
 package com.example.demo.services;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class AsyncApp1Service {
@@ -17,20 +18,20 @@ public class AsyncApp1Service {
     
     @Async
     public CompletableFuture<String> callApp1Async() {
-        String result = restTemplate.getForObject("http://spring-app-1:8081/api/hello-async", String.class);
+        String result = restTemplate.getForObject("http://spring-app-2-service.default.svc.cluster.local:8080/api/hello-async", String.class);
         return CompletableFuture.completedFuture(result);
     }
 
     @Async
     public CompletableFuture<String> callApp1AsyncError() {
-        String result = restTemplate.getForObject("http://spring-app-1:8081/api/hello-async-error", String.class);
+        String result = restTemplate.getForObject("http://spring-app-2-service.default.svc.cluster.local:8080/api/hello-async-error", String.class);
         return CompletableFuture.completedFuture(result);
     }
 
     @Async
     public void fireAndForget() {
         // This runs in background, response is ignored
-        restTemplate.getForObject("http://spring-app-1:8081/api/hello", String.class);
+        restTemplate.getForObject("http://spring-app-2-service.default.svc.cluster.local:8080/api/hello", String.class);
         // Method returns void, no waiting
     }
 }

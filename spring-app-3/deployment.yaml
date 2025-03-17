@@ -28,6 +28,7 @@ spec:
     app: spring-app-3
   ports:
   - protocol: TCP
-    port: 80
+    port: 8080
     targetPort: 8080
-  type: LoadBalancer
+    # nodePort: 30080 # Uncomment and set if you want a specific NodePort
+  type: NodePort  #

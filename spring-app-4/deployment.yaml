@@ -11,6 +11,11 @@ spec:
     metadata:
       labels:
         app: spring-app-4
+      # Add annotations for Prometheus scraping
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       containers:
       - name: spring-app-4
@@ -31,4 +36,4 @@ spec:
     port: 8080
     targetPort: 8080
     # nodePort: 30080 # Uncomment and set if you want a specific NodePort
-  type: NodePort  #
+  type: NodePort  

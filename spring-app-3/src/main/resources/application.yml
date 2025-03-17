@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  aop:
+    auto: true
+    proxy-target-class: true
+
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.web: INFO
+#  file:
+#    path: logs/
+
+logbook:
+  format.style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-API-Key
+    parameters:
+      - password
+      - secret
+      - creditCard
+      - cardNumber
+  write:
+    chunk-size: 1000

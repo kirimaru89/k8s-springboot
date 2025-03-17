@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: k8s-demo
+  name: spring-app-2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: k8s-demo
+      app: spring-app-2
   template:
     metadata:
       labels:
-        app: k8s-demo
+        app: spring-app-2
     spec:
       containers:
-      - name: k8s-demo
-        image: k8s-demo:latest
+      - name: spring-app-2
+        image: spring-app-2:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -22,10 +22,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: k8s-demo-service
+  name: spring-app-2-service
 spec:
   selector:
-    app: k8s-demo
+    app: spring-app-2
   ports:
   - protocol: TCP
     port: 80

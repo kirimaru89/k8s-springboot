@@ -1,5 +1,8 @@
 from README.md folder (root)
 
+# create prometheus
+kubectl apply -f prometheus/deployment.yaml
+
 docker build -t spring-app-1:latest ./spring-app-1
 kind load docker-image spring-app-1:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-1

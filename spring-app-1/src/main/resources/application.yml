@@ -2,10 +2,11 @@ server:
   port: 8080
 
 spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+  # datasource:
+  #   url: jdbc:otel:${SPRING_DATASOURCE_URL:mysql://localhost:3306/demodb}
+  #   username: ${SPRING_DATASOURCE_USERNAME}
+  #   password: ${SPRING_DATASOURCE_PASSWORD}
+  #   driver-class-name: io.opentelemetry.instrumentation.jdbc.OpenTelemetryDriver
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}

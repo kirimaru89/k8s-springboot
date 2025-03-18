@@ -18,7 +18,8 @@ public class OpenTelemetryConfig {
     @Bean
     public OpenTelemetry openTelemetry(
             @Value("${opentelemetry.exporter.otlp.endpoint}") String otlpEndpoint,
-            @Value("${spring.application.name:my-demo-app}") String serviceName) {
+            @Value("${spring.application.name:my-demo-app}") String serviceName,
+            @Value("${management.tracing.sampling.probability:1.0}") double samplingProbability) {
         // Create resource with service name
         Resource resource = Resource.getDefault()
             .toBuilder()
@@ -30,8 +31,13 @@ public class OpenTelemetryConfig {
             .setEndpoint(otlpEndpoint)
             .build();
             
+        // Configure sampling rate
+        io.opentelemetry.sdk.trace.samplers.Sampler sampler = 
+            io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(samplingProbability);
+        
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-            .setResource(resource)  // Set the resource with service name
+            .setResource(resource)
+            .setSampler(sampler)  // Set the sampler with configured probability
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
 

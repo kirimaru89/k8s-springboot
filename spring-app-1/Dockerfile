@@ -8,10 +8,18 @@
 # First stage: Build the JAR file
 FROM --platform=linux/arm64 maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
+
+# Copy only the POM file first
 COPY pom.xml .
-# Add Maven settings if needed
+
+# Download dependencies only (this will be cached if pom.xml doesn't change)
+RUN mvn dependency:go-offline
+
+# Now copy source code
 COPY src ./src
-RUN mvn clean package -DskipTests && \
+
+# Build the application (dependencies are already downloaded)
+RUN mvn package -DskipTests && \
     ls -la target/ && \
     find /app -name "*.jar"
 

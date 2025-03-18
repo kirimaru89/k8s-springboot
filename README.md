@@ -22,6 +22,11 @@ helm upgrade my-opentelemetry-collector opentelemetry-helm/opentelemetry-collect
   --version 0.118.0 \
   --values otelcollector/values.yaml
 
+# create kafka
+<!-- helm install my-kafka bitnami/kafka --version 31.5.0 --namespace monitoring -->
+helm repo add kafka https://helm-charts.itboon.top/kafka/
+helm install my-kafka kafka/kafka --version 18.0.1 -n monitoring
+
 docker build -t spring-app-1:latest ./spring-app-1
 kind load docker-image spring-app-1:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-1

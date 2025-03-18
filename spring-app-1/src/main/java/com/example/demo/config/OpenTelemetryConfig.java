@@ -2,10 +2,13 @@ package com.example.demo.config;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.semconv.ResourceAttributes;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,13 +16,22 @@ import org.springframework.context.annotation.Configuration;
 public class OpenTelemetryConfig {
 
     @Bean
-    public OpenTelemetry openTelemetry() {
-        // Create OTLP exporter
+    public OpenTelemetry openTelemetry(
+            @Value("${opentelemetry.exporter.otlp.endpoint}") String otlpEndpoint,
+            @Value("${spring.application.name:my-demo-app}") String serviceName) {
+        // Create resource with service name
+        Resource resource = Resource.getDefault()
+            .toBuilder()
+            .put(ResourceAttributes.SERVICE_NAME, serviceName)
+            .build();
+            
+        // Create OTLP exporter using the injected endpoint
         OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.builder()
-            .setEndpoint("http://demo-opentelemetry-collector.monitoring.svc.cluster.local:4317")
+            .setEndpoint(otlpEndpoint)
             .build();
             
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+            .setResource(resource)  // Set the resource with service name
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
 

@@ -125,14 +125,7 @@
 			<artifactId>opentelemetry-jdbc</artifactId>
 			<version>${opentelemetry.version}-alpha</version>
 		</dependency>
-		<dependency>
-			<groupId>io.opentelemetry</groupId>
-			<artifactId>opentelemetry-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.opentelemetry</groupId>
-			<artifactId>opentelemetry-sdk</artifactId>
-		</dependency>
+		<!-- Webflux - WebClient -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
@@ -141,6 +134,7 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
+		<!-- Kafka tracing - create span for Kafka & propagate trace context -->
 		<dependency>
 			<groupId>io.opentelemetry.instrumentation</groupId>
 			<artifactId>opentelemetry-kafka-clients-2.6</artifactId>

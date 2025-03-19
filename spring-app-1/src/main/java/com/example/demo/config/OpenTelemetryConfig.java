@@ -45,6 +45,8 @@ public class OpenTelemetryConfig {
             .setTracerProvider(tracerProvider)
             .build();
 
+        // Set the OpenTelemetry instance in the GlobalOpenTelemetry
+        // this is set only once, so if you need change the config, you need to restart the app
         GlobalOpenTelemetry.set(openTelemetry);
         return openTelemetry;
     }

@@ -27,10 +27,18 @@ helm upgrade my-opentelemetry-collector opentelemetry-helm/opentelemetry-collect
 helm repo add kafka https://helm-charts.itboon.top/kafka/
 helm install my-kafka kafka/kafka --version 18.0.1 -n monitoring
 
-# oracle
-helm upgrade --install oracle12c ecommerce-oracle/oracle12c \
-  --namespace default --set image.repository=container-registry.oracle.com/database/enterprise \
-  --set image.tag=19.3.0
+# oracle - setup using docker
+docker pull container-registry.oracle.com/database/free:23.6.0.0-lite-arm64
+
+docker run -d --name stanfordoradb \
+  -p 1521:1521 -p 5500:5500 \                                                                   
+  -e ORACLE_PWD=Stanford \
+  -e ORACLE_CHARACTERSET=AL32UTF8 \
+  -v $(pwd)/opt/oracle/oradata:/opt/oracle/oradata \
+  container-registry.oracle.com/database/free:23.6.0.0-lite-arm64
+
+# redis
+helm install my-redis bitnami/redis --version 20.11.3
 
 docker build -t spring-app-1:latest ./spring-app-1
 kind load docker-image spring-app-1:latest --name spring-boot-cluster

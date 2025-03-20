@@ -1,0 +1,36 @@
+# values.yaml
+
+# Persistent Volume configuration
+persistentVolume:
+  enabled: true  # Enable the PVC creation
+  name: oracle-db-pvc  # Name of the PVC
+  accessModes:
+    - ReadWriteOnce  # Access mode for the PVC
+  resources:
+    requests:
+      storage: 5Gi  # Size of the persistent volume
+  storageClass: standard  # Storage class to use for the PVC
+
+# Database configuration
+database:
+  image:
+    repository: oracle/database
+    tag: 19.3.0-ee
+  service:
+    type: ClusterIP
+    port: 1521
+
+# Resources configuration
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "500m"
+  limits:
+    memory: "4Gi"
+    cpu: "1000m"
+
+# Environment variables for the database
+env:
+  ORACLE_SID: ORCLCDB
+  ORACLE_PDB: ORCLPDB1
+  ORACLE_PWD: YourSecurePassword

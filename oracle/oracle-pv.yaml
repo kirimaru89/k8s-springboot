@@ -1,0 +1,14 @@
+   # pv.yaml
+   apiVersion: v1
+   kind: PersistentVolume
+   metadata:
+     name: oracle-pv
+   spec:
+     capacity:
+       storage: 20Gi
+     accessModes:
+       - ReadWriteOnce
+     persistentVolumeReclaimPolicy: Retain
+     storageClassName: standard
+     hostPath:
+       path: /mnt/oracle-data

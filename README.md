@@ -27,6 +27,11 @@ helm upgrade my-opentelemetry-collector opentelemetry-helm/opentelemetry-collect
 helm repo add kafka https://helm-charts.itboon.top/kafka/
 helm install my-kafka kafka/kafka --version 18.0.1 -n monitoring
 
+# oracle
+helm upgrade --install oracle12c ecommerce-oracle/oracle12c \
+  --namespace default --set image.repository=container-registry.oracle.com/database/enterprise \
+  --set image.tag=19.3.0
+
 docker build -t spring-app-1:latest ./spring-app-1
 kind load docker-image spring-app-1:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-1
@@ -47,3 +52,6 @@ kubectl apply -f deployment.yaml
 
 docker start spring-boot-cluster-control-plane
 docker stop spring-boot-cluster-control-plane
+
+# force delete
+kubectl delete pod my-postgresql-0 -n default --force --grace-period=0

@@ -14,10 +14,16 @@ import com.example.demo.services.App1Service;
 import com.example.demo.services.AsyncApp1Service;
 import com.example.demo.services.ReactiveApp1Service;
 import com.example.demo.services.LoggingService;
+import com.example.demo.services.ArtistService;
+import com.example.demo.models.Artist;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+    @Autowired
+    private ArtistService artistService;
+
     @Autowired
     private LoggingService loggingService;
 
@@ -62,7 +68,12 @@ public class TestController {
     public String fireAndForget() {
         // Start the async task but don't wait for it
         // asyncApp1Service.fireAndForget();
-        reactiveApp1Service.fireAndForgetReactive();
+        // reactiveApp1Service.fireAndForgetReactive();
+
+        List<Artist> artists = artistService.findAllArtists();
+        for (Artist artist : artists) {
+            loggingService.logInfo("Artist: " + artist.getName());
+        }
         // Return immediately
         return "Request initiated, not waiting for result";
     }

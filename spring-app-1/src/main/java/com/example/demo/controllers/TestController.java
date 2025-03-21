@@ -14,10 +14,17 @@ import com.example.demo.services.App1Service;
 import com.example.demo.services.AsyncApp1Service;
 import com.example.demo.services.ReactiveApp1Service;
 import com.example.demo.services.LoggingService;
-
+import com.example.demo.services.BookService;
+import com.example.demo.models.Book;
+import java.util.Optional;
+import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+
+    @Autowired
+    private BookService bookService;
+
     @Autowired
     private LoggingService loggingService;
 
@@ -65,6 +72,11 @@ public class TestController {
         reactiveApp1Service.fireAndForgetReactive();
         // Return immediately
         return "Request initiated, not waiting for result";
+    }
+
+    @GetMapping("/get-book/{id}")
+    public Optional<Book> getBookById(@PathVariable Long id) {
+        return bookService.getBookById(id);
     }
 
     // @GetMapping("/test")

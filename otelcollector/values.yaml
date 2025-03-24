@@ -3,7 +3,8 @@ image:
   repository: otel/opentelemetry-collector
 config:
   exporters:
-    debug: {}
+    debug:
+      verbosity: detailed
     otlp:
       endpoint: http://my-tempo.monitoring:4317
       tls:

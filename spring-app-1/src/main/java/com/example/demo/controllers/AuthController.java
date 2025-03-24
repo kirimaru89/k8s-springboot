@@ -17,7 +17,6 @@ import com.example.demo.services.LoggingService;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -32,7 +31,7 @@ public class AuthController {
     
     @Autowired
     private LoggingService loggingService;
-    
+
     private final MeterRegistry meterRegistry;
     
     // COUNTER - Increases monotonically

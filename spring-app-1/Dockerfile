@@ -1,10 +1,3 @@
-# FROM openjdk:21-jdk-slim
-# WORKDIR /app
-# COPY target/k8s-demo-1.0-SNAPSHOT.jar app.jar
-# ENTRYPOINT ["java", "-jar", "app.jar"]
-# EXPOSE 8080
-
-
 # First stage: Build the JAR file
 FROM --platform=linux/arm64 maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
@@ -12,14 +5,16 @@ WORKDIR /app
 # Copy only the POM file first
 COPY pom.xml .
 
-# Download dependencies only (this will be cached if pom.xml doesn't change)
-RUN mvn dependency:go-offline
+# Use cache mount for dependencies
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn dependency:go-offline
 
 # Now copy source code
 COPY src ./src
 
-# Build the application (dependencies are already downloaded)
-RUN mvn package -DskipTests && \
+# Build the application
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn package -DskipTests && \
     ls -la target/ && \
     find /app -name "*.jar"
 

@@ -40,19 +40,31 @@ docker run -d --name stanfordoradb \
 # redis
 helm install my-redis bitnami/redis --version 20.11.3
 
-docker build -t spring-app-1:latest ./spring-app-1
+DOCKER_BUILDKIT=1 docker buildx build \
+  --platform linux/arm64 \
+  -t spring-app-1:latest \
+  ./spring-app-1
 kind load docker-image spring-app-1:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-1
 
-docker build -t spring-app-2:latest ./spring-app-2
+DOCKER_BUILDKIT=1 docker buildx build \
+  --platform linux/arm64 \
+  -t spring-app-2:latest \
+  ./spring-app-2
 kind load docker-image spring-app-2:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-2
 
-docker build -t spring-app-3:latest ./spring-app-3
+DOCKER_BUILDKIT=1 docker buildx build \
+  --platform linux/arm64 \
+  -t spring-app-3:latest \
+  ./spring-app-3
 kind load docker-image spring-app-3:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-3
 
-docker build -t spring-app-4:latest ./spring-app-4
+DOCKER_BUILDKIT=1 docker buildx build \
+  --platform linux/arm64 \
+  -t spring-app-4:latest \
+  ./spring-app-4
 kind load docker-image spring-app-4:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-4
 

@@ -56,6 +56,17 @@ public class TestController {
                 });
     }
 
+    @GetMapping("/call-app1-async-2")
+    public CompletableFuture<String> callApp1Async2() {
+        loggingService.logInfo("before calling");
+
+        return asyncApp1Service.callApp1Async()
+                .thenApply(response -> {
+                    loggingService.logInfo("Received async response from app1 then return---");
+                    return "Async response from app1: " + response;
+                });
+    }
+
     @GetMapping("/call-app1-async-error")
     public CompletableFuture<String> callApp1AsyncError() {
         return asyncApp1Service.callApp1AsyncError()

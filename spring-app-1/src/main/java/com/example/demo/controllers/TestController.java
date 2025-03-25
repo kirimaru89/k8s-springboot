@@ -15,13 +15,16 @@ import com.example.demo.services.AsyncApp1Service;
 import com.example.demo.services.ReactiveApp1Service;
 import com.example.demo.services.LoggingService;
 import com.example.demo.services.BookService;
+import com.example.demo.services.ExampleService;
 import com.example.demo.models.Book;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
-
+    @Autowired
+    private ExampleService exampleService;
+    
     @Autowired
     private BookService bookService;
 
@@ -90,12 +93,25 @@ public class TestController {
         return bookService.getBookById(id);
     }
 
-    // @GetMapping("/test")
-    // public String test() {
-    //     logger.debug("Debug log message");
-    //     logger.info("Info log message");
-    //     logger.warn("Warning log message");
-    //     logger.error("Error log message");
-    //     return "Test logging";
-    // }
+
+    @GetMapping("/test-circuit-breaker/success")
+    public String testCircuitBreakerSuccess() {
+        return exampleService.serviceWithSuccessfulResponse();
+    }
+
+    @GetMapping("/test-circuit-breaker/failure")
+    public String testCircuitBreakerFailure() {
+        return exampleService.serviceWithFailureResponse();
+    }
+
+    @GetMapping("/test-circuit-breaker/timeout")
+    public CompletableFuture<String> testCircuitBreakerTimeout() {
+        return exampleService.serviceWithTimeout();
+    }
+
+    @GetMapping("/test-circuit-breaker/status")
+    public String getCircuitBreakerStatus() {
+        return exampleService.getCircuitBreakerStatus();
+    }
+
 }

@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zalando.logbook.BodyFilter;
 import org.zalando.logbook.HeaderFilter;
 import org.zalando.logbook.HttpHeaders;
-import org.zalando.logbook.Logbook;
 
 import java.util.Collections;
 import java.util.HashMap;

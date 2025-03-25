@@ -54,3 +54,38 @@ logbook:
       - cardNumber
   write:
     chunk-size: 1000
+
+resilience4j:  # Cấu hình circuit breaker
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true  # Đăng ký health indicator để monitoring
+    instances:
+      example:  # Cấu hình cho instance "example" được sử dụng trong TestController
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  retry:
+    instances:
+      example:
+        maxAttempts: 3
+        waitDuration: 1s
+  bulkhead:
+    instances:
+      example:
+        maxConcurrentCalls: 10
+  timelimiter:
+    instances:
+      example:
+        timeoutDuration: 2s
+  ratelimiter:
+    instances:
+      example:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 1s

@@ -17,11 +17,24 @@ spring:
     auto: true
     proxy-target-class: true
 
+# enable this to see otel logs in console
+otel:
+  exporter:
+    logging:
+      enabled: true
+  traces:
+    exporter: logging
+  metrics:
+    exporter: none
+
 logging:
   level:
     com.example.demo: DEBUG
     org.springframework.web: INFO
     org.zalando.logbook: TRACE
+    # enable this to see otel logs in console
+    io.opentelemetry.exporter.otlp: DEBUG
+    io.opentelemetry.sdk.trace.export: DEBUG
 
   file:
     path: logs/

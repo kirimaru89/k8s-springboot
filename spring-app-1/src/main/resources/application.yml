@@ -11,13 +11,6 @@ spring:
   aop:
     auto: true
     proxy-target-class: true
-  cloud:
-    kubernetes:
-      reload:
-        enabled: true
-        mode: event
-  config:
-    import: optional:file:./app/application.yaml
 
 # enable this to see otel logs in console
 otel:

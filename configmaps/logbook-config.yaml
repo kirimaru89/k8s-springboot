@@ -31,4 +31,4 @@ data:
             - pattern: "\"apiKey\"\\s*:\\s*\"[^\"]*\""
               replacement: "\"apiKey\":\"****\""
             - pattern: "\"ssn\"\\s*:\\s*\"[^\"]*\""
-              replacement: "\"testchange\":\"****\""
+              replacement: "\"ohmygod\":\"****\""

@@ -18,10 +18,18 @@ import com.example.demo.services.BookService;
 import com.example.demo.services.ExampleService;
 import com.example.demo.models.Book;
 import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.example.demo.config.BodyFilterProperties;
+
 import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+    @Autowired
+    private BodyFilterProperties bodyFilterProps;
+
     @Autowired
     private ExampleService exampleService;
     
@@ -114,4 +122,16 @@ public class TestController {
         return exampleService.getCircuitBreakerStatus();
     }
 
+    @GetMapping("/config-test")
+    public Map<String, Object> getConfig() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("patternCount", bodyFilterProps.getPatterns().size());
+        config.put("patterns", bodyFilterProps.getPatterns().stream()
+            .map(p -> Map.of(
+                "pattern", p.getPattern(),
+                "replacement", p.getReplacement()
+            ))
+            .collect(Collectors.toList()));
+        return config;
+    }
 }

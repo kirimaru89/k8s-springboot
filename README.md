@@ -75,3 +75,14 @@ docker stop spring-boot-cluster-control-plane
 
 # force delete
 kubectl delete pod my-postgresql-0 -n default --force --grace-period=0
+
+
+# deploy configuration watcher
+# application
+kubectl apply -f configmaps/application-rbac.yaml
+kubectl apply -f spring-app-1/deployment.yaml
+# configuration watcher
+kubectl apply -f configmaps/configuration-watcher-rbac.yaml
+kubectl apply -f configmaps/configuration-watcher.yaml
+# logbook-config
+kubectl apply -f configmaps/logbook-config.yaml

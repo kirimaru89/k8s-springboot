@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logbook-config
+  labels:
+    spring.cloud.kubernetes.config: "true"
+  annotations:
+    spring.cloud.kubernetes.configmap.apps: "spring-app-1-service"
+data:
+  application.yml: |-
+    logbook:
+      body:
+        filter:
+          patterns:
+            - pattern: "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
+              replacement: "****-****-****-$4"
+            - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"
+              replacement: "****@$1"
+            - pattern: "\"password\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"password\":\"****\""
+            - pattern: "\"secret\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"secret\":\"****\""
+            - pattern: "\"creditCard\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"creditCard\":\"****\""
+            - pattern: "\"cardNumber\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"cardNumber\":\"****\""
+            - pattern: "\"privateKey\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"privateKey\":\"****\""
+            - pattern: "\"token\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"token\":\"****\""
+            - pattern: "\"apiKey\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"apiKey\":\"****\""
+            - pattern: "\"ssn\"\\s*:\\s*\"[^\"]*\""
+              replacement: "\"testchange\":\"****\""

@@ -16,12 +16,20 @@ spec:
         prometheus.io/port: "8080"    # Specify the metrics port
         prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (change if needed)
     spec:
+      serviceAccountName: spring-app-1-sa # must match the service account name in the application-rbac.yaml file
       containers:
       - name: spring-app-1
         image: spring-app-1:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logbook-config
 ---
 apiVersion: v1
 kind: Service

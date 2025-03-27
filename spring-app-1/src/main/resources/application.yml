@@ -30,12 +30,13 @@ logging:
     # enable this to see otel logs in console
     io.opentelemetry.exporter.otlp: DEBUG
     io.opentelemetry.sdk.trace.export: DEBUG
+    io.opentelemetry: DEBUG
 
   file:
     path: logs/
 
 logbook:
-  format.style: json
+  format.style: http
   include: /**  # This ensures all paths are logged
   exclude: /actuator/**  # Optional exclusions
   obfuscate:

@@ -298,7 +298,10 @@ service:
   # -- If service type is LoadBalancer, the exposed protocol can either be "UDP", "TCP" or "UDP,TCP"
   protocol: "TCP"
 
-  annotations: {}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3100"
+    prometheus.io/path: "/metrics"
   labels: {}
   targetPort: ""
 
@@ -319,7 +322,10 @@ persistence:
   size: 10Gi
 
 # -- Pod Annotations
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3100"
+  prometheus.io/path: "/metrics"
 
 # -- Pod (extra) Labels
 podLabels: {}

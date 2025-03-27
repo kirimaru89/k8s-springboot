@@ -8,6 +8,7 @@ kubectl apply -f grafana/deployment.yaml
 
 # create tempo
 helm install my-tempo grafana/tempo -f tempo/values.yaml -n monitoring
+helm upgrade my-tempo grafana/tempo -f tempo/values.yaml -n monitoring
 
 # create otel colletor
 helm install my-opentelemetry-collector opentelemetry-helm/opentelemetry-collector \

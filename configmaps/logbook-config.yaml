@@ -4,8 +4,9 @@ metadata:
   name: logbook-config
   labels:
     spring.cloud.kubernetes.config: "true"
+    spring.cloud.kubernetes.secret: "true"
   annotations:
-    spring.cloud.kubernetes.configmap.apps: "spring-app-1-service"
+    spring.cloud.kubernetes.configmap.apps: "spring-app-1-service" # will find all the pods match the service's selector to refresh the config in parallel: Sending refresh request for spring-app-1-service to URI http://10.244.0.43:8080/actuator/refresh
 data:
   application.yml: |-
     logbook:

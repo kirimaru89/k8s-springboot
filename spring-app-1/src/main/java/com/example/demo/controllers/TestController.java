@@ -22,11 +22,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import com.example.demo.config.BodyFilterProperties;
-
+import com.example.demo.config.DataSourceProperties;
 import org.springframework.web.bind.annotation.PathVariable;
+
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+
+    @Autowired
+    private DataSourceProperties dataSourceProps;
+
     @Autowired
     private BodyFilterProperties bodyFilterProps;
 
@@ -132,6 +137,16 @@ public class TestController {
                 "replacement", p.getReplacement()
             ))
             .collect(Collectors.toList()));
+        return config;
+    }
+
+    @GetMapping("/vault-test")
+    public Map<String, Object> getVaultConfig() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("url", dataSourceProps.getUrl());
+        config.put("username", dataSourceProps.getUsername());
+        config.put("password", dataSourceProps.getPassword());
+        config.put("driverClassName", dataSourceProps.getDriverClassName());
         return config;
     }
 }

@@ -87,3 +87,26 @@ kubectl apply -f configmaps/configuration-watcher-rbac.yaml
 kubectl apply -f configmaps/configuration-watcher.yaml
 # logbook-config
 kubectl apply -f configmaps/logbook-config.yaml
+
+
+# hashicorp vault
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm search repo hashicorp/vault
+helm install my-vault hashicorp/vault --version 0.29.1 -n monitoring \
+  --set "server.dev.enabled=false" \
+  --set "server.ha.enabled=true" \
+  --set "server.ha.raft.enabled=true" \
+  --set "server.ha.replicas=1" \
+  --set "server.dataStorage.enabled=true" \
+  --set "server.dataStorage.size=1Gi"
+
+# init A set of unseal keys (save at least 3 of them).
+# init A root token (used to authenticate as root).
+kubectl exec -it my-vault-0 -n monitoring -- vault operator init
+
+# unseal vault
+kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal rA9GbPmuIybuLFjxqFwmjEpQuuZ2FlIDI7L4xqgi1IAq
+kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal GaCaTzlmE5XRabSkfpaJMBT8/f8KxNbyv6hQPqW9BW2N
+kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal jHFUJ4noLx3PDLHq8QT8CK8lgUUALAyoyH/vqfOj/37Z
+
+helm uninstall my-vault -n monitoring

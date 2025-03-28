@@ -12,6 +12,16 @@ spring:
     auto: true
     proxy-target-class: true
 
+  cloud:
+    vault:
+      uri: http://my-vault.monitoring.svc.cluster.local:8200
+      scheme: http
+      token: root-token
+      kv:
+        enabled: true
+        backend: secret
+        default-context: bookapp
+
 # enable this to see otel logs in console
 # otel:
 #   exporter:
@@ -85,3 +95,4 @@ resilience4j:  # Cấu hình circuit breaker
         limitForPeriod: 10
         limitRefreshPeriod: 1s
         timeoutDuration: 1s
+  

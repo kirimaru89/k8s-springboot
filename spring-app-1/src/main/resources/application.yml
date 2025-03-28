@@ -16,7 +16,7 @@ spring:
     vault:
       uri: http://my-vault.monitoring.svc.cluster.local:8200
       scheme: http
-      token: root-token
+      token: 
       kv:
         enabled: true
         backend: secret

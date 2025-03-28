@@ -110,6 +110,3 @@ kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal GaCaTzlmE5XRa
 kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal jHFUJ4noLx3PDLHq8QT8CK8lgUUALAyoyH/vqfOj/37Z
 
 helm uninstall my-vault -n monitoring
-
-# apply vault test
-kubectl apply -f vault/vault-test.yaml -n monitoring

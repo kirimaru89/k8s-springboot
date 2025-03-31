@@ -18,7 +18,7 @@ data:
             - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"
               replacement: "****@$1"
             - pattern: "\"password\"\\s*:\\s*\"[^\"]*\""
-              replacement: "\"password\":\"****\""
+              replacement: "\"password\":\"password12345\""
             - pattern: "\"secret\"\\s*:\\s*\"[^\"]*\""
               replacement: "\"secret\":\"****\""
             - pattern: "\"creditCard\"\\s*:\\s*\"[^\"]*\""

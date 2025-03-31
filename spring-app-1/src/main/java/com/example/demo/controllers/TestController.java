@@ -4,9 +4,11 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +18,10 @@ import com.example.demo.services.ReactiveApp1Service;
 import com.example.demo.services.LoggingService;
 import com.example.demo.services.BookService;
 import com.example.demo.services.ExampleService;
+import com.example.demo.services.CircuitBreakerCustomService;
+import com.example.demo.dto.CircuitBreakerTestRequest;
+import com.example.demo.dto.ApiResponse;
+
 import com.example.demo.models.Book;
 import java.util.Optional;
 import java.util.HashMap;
@@ -28,7 +34,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
-
     @Autowired
     private DataSourceProperties dataSourceProps;
 
@@ -37,7 +42,10 @@ public class TestController {
 
     @Autowired
     private ExampleService exampleService;
-    
+
+    @Autowired
+    private CircuitBreakerCustomService circuitBreakerCustomService;
+
     @Autowired
     private BookService bookService;
 
@@ -108,23 +116,37 @@ public class TestController {
 
 
     @GetMapping("/test-circuit-breaker/success")
-    public String testCircuitBreakerSuccess() {
+    public ResponseEntity<ApiResponse<String>> testCircuitBreakerSuccess() {
+        loggingService.logInfo("Calling circuit breaker success endpoint");
         return exampleService.serviceWithSuccessfulResponse();
     }
 
     @GetMapping("/test-circuit-breaker/failure")
-    public String testCircuitBreakerFailure() {
-        return exampleService.serviceWithFailureResponse();
+    public ResponseEntity<ApiResponse<String>> testCircuitBreakerFailure() {
+       return exampleService.serviceWithFailureResponse();
     }
 
     @GetMapping("/test-circuit-breaker/timeout")
-    public CompletableFuture<String> testCircuitBreakerTimeout() {
+    public CompletableFuture<ResponseEntity<ApiResponse<String>>> testCircuitBreakerTimeout() {
         return exampleService.serviceWithTimeout();
     }
 
     @GetMapping("/test-circuit-breaker/status")
-    public String getCircuitBreakerStatus() {
+    public ResponseEntity<ApiResponse<String>> getCircuitBreakerStatus() {
         return exampleService.getCircuitBreakerStatus();
+    }
+
+    @PostMapping("/test-circuit-breaker/custom")
+    public ResponseEntity<ApiResponse<String>> testCircuitBreakerCustom(@RequestBody CircuitBreakerTestRequest request) {
+        loggingService.logInfo("Testing circuit breaker for bank: " + request.getBankName()
+            + ", operation: " + request.getOperation());
+        return circuitBreakerCustomService.testWithCustomConfig(request);
+    }
+
+    @GetMapping("/test-circuit-breaker/custom/status/{bankName}")
+    public ResponseEntity<ApiResponse<String>> getCustomCircuitBreakerStatus(@PathVariable String bankName) {
+        loggingService.logInfo("Checking circuit breaker status for bank: " + bankName);
+        return circuitBreakerCustomService.getCircuitBreakerStatus(bankName);
     }
 
     @GetMapping("/config-test")

@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import java.util.concurrent.CompletableFuture;
+import com.example.demo.dto.ApiResponse;
+import com.example.demo.enums.ResponseCode;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import org.springframework.http.ResponseEntity;
+import java.time.Duration;
 
 @Service
 public class ExampleService {
@@ -18,85 +24,76 @@ public class ExampleService {
 //    Timeout: @TimeLimiter đảm bảo các operation không chạy quá lâu. Lưu ý phải trả về CompletableFuture.
 //    Rate Limiting: @RateLimiter giới hạn số lượng request trong một khoảng thời gian.
 //    Fallback: Các phương thức fallback được gọi khi có lỗi, với các handler riêng cho từng loại lỗi.
-    
+
     private static final String BACKEND = "example";
-    
+    private static final String BANK_A_BACKEND = "bank-a";
+    private static final String BANK_B_BACKEND = "bank-b";
+
     private final CircuitBreakerRegistry circuitBreakerRegistry;
 
     @Autowired
     public ExampleService(CircuitBreakerRegistry circuitBreakerRegistry) {
         this.circuitBreakerRegistry = circuitBreakerRegistry;
     }
-    
-    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @Retry(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @RateLimiter(name = BACKEND, fallbackMethod = "handleRateLimitException")
-    @Bulkhead(name = BACKEND, fallbackMethod = "handleBulkheadException")
-    public String doSomething() {
-        // Giả lập một service call có thể bị lỗi
-        if(Math.random() < 0.7) { // 70% xác suất gây lỗi
+
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleException")
+    @Retry(name = BACKEND, fallbackMethod = "handleException")
+    @RateLimiter(name = BACKEND, fallbackMethod = "handleException")
+    @Bulkhead(name = BACKEND, fallbackMethod = "handleException")
+    public ResponseEntity<ApiResponse<String>> doSomething() {
+        if(Math.random() < 0.7) {
             throw new RuntimeException("Service failed!");
         }
-        return "Success";
-    }
-    
-    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @Retry(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @RateLimiter(name = BACKEND, fallbackMethod = "handleRateLimitException")
-    @Bulkhead(name = BACKEND, fallbackMethod = "handleBulkheadException")
-    public String serviceWithSuccessfulResponse() {
-        // Bỏ random error, luôn trả về success
-        return "Success response";
+        return ApiResponse.success("Success");
     }
 
-    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @Retry(name = BACKEND, fallbackMethod = "handleGeneralException")
-    @RateLimiter(name = BACKEND, fallbackMethod = "handleRateLimitException")
-    @Bulkhead(name = BACKEND, fallbackMethod = "handleBulkheadException")
-    public String serviceWithFailureResponse() {
-        // Luôn throw exception để test circuit breaker
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleException")
+    @Retry(name = BACKEND, fallbackMethod = "handleException")
+    public ResponseEntity<ApiResponse<String>> serviceWithSuccessfulResponse() {
+        // Bỏ random error, luôn trả về success
+        return ApiResponse.success("Success response");
+    }
+
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleException")
+    @Retry(name = BACKEND, fallbackMethod = "handleException")
+    public ResponseEntity<ApiResponse<String>> serviceWithFailureResponse() {
         throw new RuntimeException("Service failed!");
     }
 
-    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleTimeout")
-    @Retry(name = BACKEND, fallbackMethod = "handleTimeout")
-    @TimeLimiter(name = BACKEND)
-    @RateLimiter(name = BACKEND)
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "handleException")
+    @Retry(name = BACKEND, fallbackMethod = "handleException")
+    @TimeLimiter(name = BACKEND, fallbackMethod = "handleException")
+    @RateLimiter(name = BACKEND, fallbackMethod = "handleException")
     @Bulkhead(name = BACKEND)
-    public CompletableFuture<String> serviceWithTimeout() {
+    public CompletableFuture<ResponseEntity<ApiResponse<String>>> serviceWithTimeout() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Thread.sleep(5000); // Simulate a 5-second delay
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            return "Delayed response";
+            return ApiResponse.success("Delayed response");
         });
     }
 
-    public String getCircuitBreakerStatus() {
-        return circuitBreakerRegistry.circuitBreaker(BACKEND)
-                .getState()
-                .toString();
+    public ResponseEntity<ApiResponse<String>> getCircuitBreakerStatus() {
+        String state = circuitBreakerRegistry.circuitBreaker(BACKEND).getState().toString();
+        return ApiResponse.success(state);
     }
 
-    // Xử lý lỗi Bulkhead (quá tải)
-    public CompletableFuture<String> handleBulkheadException(Exception e, io.github.resilience4j.bulkhead.BulkheadFullException b) {
-        return CompletableFuture.completedFuture("Hệ thống đang quá tải, vui lòng thử lại sau");
+    // Cập nhật fallback method để xử lý các loại exception cụ thể
+    public ResponseEntity<ApiResponse<String>> handleException(Exception e) {
+        if (e instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
+            return ApiResponse.error(ResponseCode.CIRCUIT_BREAKER_OPEN);
+        } else if (e instanceof RequestNotPermitted) {
+            return ApiResponse.error(ResponseCode.RATE_LIMIT_EXCEEDED);
+        } else if (e instanceof BulkheadFullException) {
+            return ApiResponse.error(ResponseCode.BULKHEAD_FULL);
+        } else if (e instanceof java.util.concurrent.TimeoutException) {
+            return ApiResponse.error(ResponseCode.TIMEOUT_ERROR);
+        }
+        
+        // Mặc định trả về internal server error
+        return ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR);
     }
-
-    // Xử lý lỗi Rate Limit
-    public CompletableFuture<String> handleRateLimitException(Exception e, io.github.resilience4j.ratelimiter.RequestNotPermitted r) {
-        return CompletableFuture.completedFuture("Đã vượt quá số lượng yêu cầu cho phép, vui lòng thử lại sau");
-    }
-
-    // Xử lý lỗi Timeout
-    public CompletableFuture<String> handleTimeout(Exception e) {
-        return CompletableFuture.completedFuture("Yêu cầu đã hết thời gian chờ");
-    }
-
-    // Xử lý các lỗi khác
-    public CompletableFuture<String> handleGeneralException(Exception e) {
-        return CompletableFuture.completedFuture("Đã xảy ra lỗi: " + e.getMessage());
-    }
-} 
+}

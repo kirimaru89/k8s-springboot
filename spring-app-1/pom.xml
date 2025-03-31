@@ -41,7 +41,6 @@
 			</dependency>
 			<!-- https://stackoverflow.com/questions/42659920/is-there-a-compatibility-matrix-of-spring-boot-and-spring-cloud -->
 			<!-- spring cloud dependencies for @RefreshScope -->
-			<!-- For Hashicorp Vault -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
@@ -187,11 +186,6 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-kubernetes-client-config</artifactId>
-		</dependency>
-		<!-- For Hashicorp Vault -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-vault-config</artifactId>
 		</dependency>
 	</dependencies>
 

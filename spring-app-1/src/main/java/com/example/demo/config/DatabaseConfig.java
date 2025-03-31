@@ -11,8 +11,8 @@ public class DatabaseConfig {
     @Bean
     public DataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:otel:mysql://mysql:3306/book_db");
-        dataSource.setDriverClassName("io.opentelemetry.instrumentation.jdbc.OpenTelemetryDriver");
+        dataSource.setJdbcUrl("jdbc:mysql://mysql:3306/book_db?useSSL=false&serverTimezone=UTC");
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUsername("user");
         dataSource.setPassword("password");
         return dataSource;

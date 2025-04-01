@@ -25,11 +25,16 @@ spec:
         - containerPort: 8080
         volumeMounts:
         - name: config-volume
-          mountPath: app/config
+          mountPath: app/config/logging
+        - name: resilience-volume
+          mountPath: app/config/resilience
       volumes:
       - name: config-volume
         configMap:
           name: logbook-config
+      - name: resilience-volume
+        configMap:
+          name: resilience-config
 ---
 apiVersion: v1
 kind: Service

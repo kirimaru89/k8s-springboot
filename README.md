@@ -110,3 +110,6 @@ kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal GaCaTzlmE5XRa
 kubectl exec -it my-vault-0 -n monitoring -- vault operator unseal jHFUJ4noLx3PDLHq8QT8CK8lgUUALAyoyH/vqfOj/37Z
 
 helm uninstall my-vault -n monitoring
+
+# resilience config
+kubectl apply -f circuitbreaker/resilience-config.yaml

@@ -21,9 +21,8 @@ spring:
         enabled: true
         backend: secret
         default-context: bookapp
-  spring:
-    config:
-      import: "optional:file:app/config/logging/,optional:file:app/config/resilience/"
+  config:
+    import: "optional:file:app/config/logging/,optional:file:app/config/resilience/"
 
 # enable this to see otel logs in console
 # otel:

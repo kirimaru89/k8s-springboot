@@ -2,6 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: resilience-config
+  labels:
+    spring.cloud.kubernetes.config: "true"
+  annotations:
+    spring.cloud.kubernetes.configmap.apps: "spring-app-1-service"
 data:
   application.yml: |
     resilience4j:  # Cấu hình circuit breaker

@@ -70,6 +70,9 @@ public class TestController {
 
     @GetMapping("/call-async-flow-to-spring-app-2")
     public CompletableFuture<String> callAsyncFlowToSpringApp2() {
+        var book = bookService.getBookById(1L);
+        loggingService.logInfo("Book: " + book.get().getTitle());
+
         loggingService.logInfo("before calling");
 
         return asyncApp1Service.callSpringApp2Async()

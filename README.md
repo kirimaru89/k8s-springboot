@@ -1,7 +1,7 @@
 from README.md folder (root)
 
 # create prometheus
-kubectl apply -f prometheus/deployment.yaml
+helm install my-prometheus prometheus-community/prometheus --version 27.7.1
 
 # create grafana
 kubectl apply -f grafana/deployment.yaml

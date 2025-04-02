@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import io.micrometer.core.annotation.Timed;
 
 import com.example.demo.services.App1Service;
 import com.example.demo.services.AsyncApp1Service;
@@ -68,7 +69,7 @@ public class TestController {
         return "Response from app1: " + response;
     }
     
-
+    @Timed(value = "spring-app-1.test.call-async-flow-to-spring-app-2", description = "Time spent in service call")
     @GetMapping("/call-async-flow-to-spring-app-2/{id}")
     public CompletableFuture<String> callAsyncFlowToSpringApp2(@PathVariable Long id) {
         Optional<Book> book = bookService.getBookById(id);
@@ -132,6 +133,7 @@ public class TestController {
         return bookService.getBookById(id);
     }
 
+    @Timed(value = "spring-app-1.test.test-circuit-breaker", description = "Time spent in service call")
     @GetMapping("/test-circuit-breaker")
     public ResponseEntity<ApiResponse<String>> testCircuitBreaker(
             @RequestParam(defaultValue = "true") boolean success) {

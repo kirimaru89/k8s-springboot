@@ -6,10 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.example.demo.repositories.BookRepository;
+import com.example.demo.models.Book;
+import java.util.List;
 
 @Service
 public class AsyncApp1Service {
     private final RestTemplate restTemplate;
+
+    @Autowired
+    private BookRepository bookRepository;
     
     @Autowired
     public AsyncApp1Service(RestTemplate restTemplate) {
@@ -18,6 +24,11 @@ public class AsyncApp1Service {
 
     @Async
     public CompletableFuture<String> callSpringApp2Async() {
+        // print books
+        List<Book> books = bookRepository.findAll();
+        for (Book book : books) {
+            System.out.println("Book: " + book.getTitle());
+        }
         String result = restTemplate.getForObject("http://spring-app-2-service.default.svc.cluster.local:8080/api/test/call-async-flow-to-spring-app-3", String.class);
         return CompletableFuture.completedFuture(result);
     }

@@ -12,10 +12,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class LoggingService {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingService.class);
-    
+
     @Autowired
     private BodyFilter bodyFilter;
-    
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void log(String message, Object... args) {

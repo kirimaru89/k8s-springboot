@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.demo.services.App1Service;
 import com.example.demo.services.AsyncApp1Service;
@@ -127,26 +128,20 @@ public class TestController {
         return bookService.getBookById(id);
     }
 
-
-    @GetMapping("/test-circuit-breaker/success")
-    public ResponseEntity<ApiResponse<String>> testCircuitBreakerSuccess() {
-        loggingService.logInfo("Calling circuit breaker success endpoint");
-        return exampleService.serviceWithSuccessfulResponse();
-    }
-
-    @GetMapping("/test-circuit-breaker/failure")
-    public ResponseEntity<ApiResponse<String>> testCircuitBreakerFailure() {
-       return exampleService.serviceWithFailureResponse();
-    }
-
-    @GetMapping("/test-circuit-breaker/timeout")
-    public CompletableFuture<ResponseEntity<ApiResponse<String>>> testCircuitBreakerTimeout() {
-        return exampleService.serviceWithTimeout();
+    @GetMapping("/test-circuit-breaker")
+    public ResponseEntity<ApiResponse<String>> testCircuitBreaker(
+            @RequestParam(defaultValue = "true") boolean success) {
+        return exampleService.doSomething(success);
     }
 
     @GetMapping("/test-circuit-breaker/status")
     public ResponseEntity<ApiResponse<String>> getCircuitBreakerStatus() {
         return exampleService.getCircuitBreakerStatus();
+    }
+
+    @GetMapping("/test-circuit-breaker/timeout")
+    public CompletableFuture<ResponseEntity<ApiResponse<String>>> testCircuitBreakerTimeout() {
+        return exampleService.serviceWithTimeout();
     }
 
     @PostMapping("/test-circuit-breaker/custom")

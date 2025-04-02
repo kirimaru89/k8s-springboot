@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.example.demo.utils.LanguageUtils;
 
 @Data
 @Builder
@@ -18,9 +19,10 @@ public class ApiResponse<T> {
     private String message;
     private long timestamp;
     public static <T> ResponseEntity<ApiResponse<T>> success(T data) {
+        String language = LanguageUtils.getCurrentLanguage();
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
+                .message(getLocalizedMessage(ResponseCode.SUCCESS, language))
                 .data(data)
                 .timestamp(System.currentTimeMillis())
                 .build();
@@ -28,18 +30,20 @@ public class ApiResponse<T> {
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> error(ResponseCode responseCode) {
+        String language = LanguageUtils.getCurrentLanguage();
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(responseCode.getCode())
-                .message(responseCode.getMessage())
+                .message(getLocalizedMessage(responseCode, language))
                 .timestamp(System.currentTimeMillis())
                 .build();
         return new ResponseEntity<>(response, getHttpStatus(responseCode));
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> error(ResponseCode responseCode, String additionalMessage) {
+        String language = LanguageUtils.getCurrentLanguage();
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(responseCode.getCode())
-                .message(responseCode.getMessage() + ": " + additionalMessage)
+                .message(getLocalizedMessage(responseCode, language) + ": " + additionalMessage)
                 .timestamp(System.currentTimeMillis())
                 .build();
         return new ResponseEntity<>(response, getHttpStatus(responseCode));
@@ -68,5 +72,12 @@ public class ApiResponse<T> {
             default:
                 return HttpStatus.INTERNAL_SERVER_ERROR;
         }
+    }
+
+    private static String getLocalizedMessage(ResponseCode responseCode, String language) {
+        if ("vi".equalsIgnoreCase(language)) {
+            return responseCode.getViMessage();
+        }
+        return responseCode.getMessage();
     }
 } 

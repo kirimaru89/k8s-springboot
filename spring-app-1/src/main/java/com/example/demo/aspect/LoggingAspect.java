@@ -37,11 +37,37 @@ public class LoggingAspect {
             // Log response cho các phương thức đồng bộ
             String responseData = result != null ? objectMapper.writeValueAsString(result) : "void";
             loggingService.log("Finish: ", responseData);
-            
+
             return result;
         } finally {
-            MDC.remove("className");
-            MDC.remove("function");
+            MDC.clear();
+        }
+    }
+
+    @Around("execution(* com.example.demo.services..*.*(..)) " +
+           "&& !execution(* com.example.demo.services.LoggingService.*(..))")
+    public Object logAroundService(ProceedingJoinPoint joinPoint) throws Throwable {
+        try {
+            String className = joinPoint.getSignature().getDeclaringTypeName();
+            String methodName = joinPoint.getSignature().getName();
+
+            // Thêm service và method name vào MDC
+            MDC.put("className", className);
+            MDC.put("function", methodName);
+
+            // Log request
+            Object[] args = joinPoint.getArgs();
+            loggingService.log("Start Service:", args);
+
+            Object result = joinPoint.proceed();
+
+            // Log response cho các phương thức đồng bộ
+            String responseData = result != null ? objectMapper.writeValueAsString(result) : "void";
+            loggingService.log("Finish Service: ", responseData);
+
+            return result;
+        } finally {
+            MDC.clear();
         }
     }
 }

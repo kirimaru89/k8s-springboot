@@ -89,19 +89,18 @@ const patternTests = {
   circuitBreaker: function() {
     let failureCount = 0;
     const currentState = getCurrentCircuitBreakerState();
-    console.log('currentStatecurrentStatecurrentStatecurrentStatecurrentState', currentState);
     let response;
     if (currentState === 'HALF_OPEN') {
       // Khi ở trạng thái HALF_OPEN, gửi request success để chuyển sang CLOSED
       console.log('HALF_OPEN state detected - Sending success request to recover');
-      response = http.get(`${BASE_URL}/test-circuit-breaker/success`);
+      response = http.get(`${BASE_URL}/test-circuit-breaker?success=true`);
     } else if (currentState === 'CLOSED' && __VU <= 5) {
       // Khi đã CLOSED và số VU thấp, tiếp tục gửi success để duy trì trạng thái
       console.log('CLOSED state - Maintaining healthy state with success requests');
-      response = http.get(`${BASE_URL}/test-circuit-breaker/success`);
+      response = http.get(`${BASE_URL}/test-circuit-breaker?success=true`);
     } else {
       // Các trường hợp còn lại gửi request failure
-      response = http.get(`${BASE_URL}/test-circuit-breaker/failure`);
+      response = http.get(`${BASE_URL}/test-circuit-breaker?success=false`);
     }
     
     // console.log(`[${new Date().toISOString()}]`, `- Response: ${response.json().code}`);
@@ -126,7 +125,7 @@ const patternTests = {
 
   // Test Bulkhead Pattern
   bulkhead: function() {
-    const response = http.get(`${BASE_URL}/test-circuit-breaker/success`);
+    const response = http.get(`${BASE_URL}/test-circuit-breaker?success=true`);
     
     check(response, {
       'Response is valid': (r) => {
@@ -145,7 +144,7 @@ const patternTests = {
 
   // Test Rate Limiter Pattern
   rateLimiter: function() {
-    const response = http.get(`${BASE_URL}/test-circuit-breaker/success`);
+    const response = http.get(`${BASE_URL}/test-circuit-breaker?success=true`);
     
     check(response, {
       'Response is valid': (r) => {

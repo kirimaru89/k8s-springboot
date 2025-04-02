@@ -22,7 +22,7 @@ public class RedisTracingConfig {
 
     @Bean
     public ClientResources lettuceClientResources(ObservationRegistry observationRegistry) {
-        MicrometerTracing micrometerTracing = new MicrometerTracing(observationRegistry, "redis");
+        MicrometerTracing micrometerTracing = new MicrometerTracing(observationRegistry, "redis", true);
         return ClientResources.builder()
                 .tracing(micrometerTracing)
                 .build();

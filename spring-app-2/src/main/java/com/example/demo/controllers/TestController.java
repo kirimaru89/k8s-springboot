@@ -38,10 +38,19 @@ public class TestController {
 
     @PostMapping("/sync")
     public String sync() {
-//        log.info("Starting sync call to app1");
         String response = app1Service.getHelloFromApp1();
-//        log.info("Completed sync call to app1 with response: {}", response);
         return "Response from app1: " + response;
+    }
+
+    @GetMapping("/call-async-flow-to-spring-app-3")
+    public CompletableFuture<String> callAsyncFlowToSpringApp3() {
+        loggingService.logInfo("before calling");
+
+        return asyncApp1Service.callSpringApp3Async()
+                .thenApply(response -> {
+                    loggingService.logInfo("Received async response from spring-app-3 then return---");
+                    return "Async response from spring-app-3: " + response;
+                });
     }
 
     @GetMapping("/call-app1-async")

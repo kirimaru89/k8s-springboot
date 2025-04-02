@@ -14,6 +14,12 @@ public class AsyncApp1Service {
     public AsyncApp1Service(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+    @Async
+    public CompletableFuture<String> callSpringApp3Async() {
+        String result = restTemplate.getForObject("http://spring-app-3-service.default.svc.cluster.local:8080/api/test/call-async-flow-to-spring-app-4", String.class);
+        return CompletableFuture.completedFuture(result);
+    }
     
     @Async
     public CompletableFuture<String> callApp1Async() {

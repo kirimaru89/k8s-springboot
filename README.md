@@ -69,7 +69,10 @@ DOCKER_BUILDKIT=1 docker buildx build \
 kind load docker-image spring-app-4:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-4
 
-kubectl apply -f deployment.yaml 
+kubectl apply -f spring-app-1/deployment.yaml
+kubectl apply -f spring-app-2/deployment.yaml
+kubectl apply -f spring-app-3/deployment.yaml
+kubectl apply -f spring-app-4/deployment.yaml
 
 docker start spring-boot-cluster-control-plane
 docker stop spring-boot-cluster-control-plane

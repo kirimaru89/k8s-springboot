@@ -16,6 +16,12 @@ public class AsyncApp1Service {
     }
     
     @Async
+    public CompletableFuture<String> callSpringApp4Async() {
+        String result = restTemplate.getForObject("http://spring-app-4-service.default.svc.cluster.local:8080/api/test/end-async-flow", String.class);
+        return CompletableFuture.completedFuture(result);
+    }
+
+    @Async
     public CompletableFuture<String> callApp1Async() {
         String result = restTemplate.getForObject("http://spring-app-1:8081/api/hello-async", String.class);
         return CompletableFuture.completedFuture(result);

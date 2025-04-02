@@ -38,6 +38,13 @@ public class TestController {
         return "Response from app1: " + response;
     }
 
+    @GetMapping("/end-async-flow")
+    public CompletableFuture<String> endAsyncFlow() {
+        loggingService.logInfo("before calling");
+
+        return CompletableFuture.completedFuture("End Flow from spring-app-4");
+    }
+
     @GetMapping("/call-app1-async")
     public CompletableFuture<String> callApp1Async() {
         loggingService.logInfo("before calling");

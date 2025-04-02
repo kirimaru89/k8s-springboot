@@ -38,6 +38,17 @@ public class TestController {
         return "Response from app1: " + response;
     }
 
+    @GetMapping("/call-async-flow-to-spring-app-4")
+    public CompletableFuture<String> callAsyncFlowToSpringApp4() {
+        loggingService.logInfo("before calling");
+
+        return asyncApp1Service.callSpringApp4Async()
+                .thenApply(response -> {
+                    loggingService.logInfo("Received async response from spring-app-4 then return---");
+                    return "Async response from spring-app-4: " + response;
+                });
+    }
+
     @GetMapping("/call-app1-async")
     public CompletableFuture<String> callApp1Async() {
         loggingService.logInfo("before calling");

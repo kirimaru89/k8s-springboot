@@ -22,7 +22,7 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
     private String bootstrapServers;
     
-    @Value("${spring.kafka.consumer.group-id:spring-app-2}")
+    @Value("${spring.kafka.consumer.group-id:spring-app-3}")
     private String groupId;
 
     @Bean

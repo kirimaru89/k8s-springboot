@@ -7,14 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.ScopedSpan;
-import com.example.demo.repositories.BookRepository;
-import com.example.demo.models.Book;
+import com.example.demo.models.Artist;
+import com.example.demo.repositories.ArtistRepository;
 
 @Service
 public class KafkaConsumerService {
-
     @Autowired
-    private BookRepository bookRepository;
+    private ArtistRepository artistRepository;
 
     private static final Logger log = LoggerFactory.getLogger(KafkaConsumerService.class);
 
@@ -30,10 +29,10 @@ public class KafkaConsumerService {
             span.tag("message.type", "kafka");
             span.tag("kafka.topic", "app-communication");
             
-            var books = bookRepository.findAll();
+            var artists = artistRepository.findAll();
             log.info("Processing message:");
-            for (Book book : books) {
-                log.info("Processing message: {}", book.getTitle());
+            for (Artist artist : artists) {
+                log.info("Processing message: {}", artist.getName());
             }
         } catch (Exception e) {
             span.error(e);

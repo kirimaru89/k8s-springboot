@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.services.KafkaProducerService;
 import com.example.demo.services.App1Service;
 import com.example.demo.services.AsyncApp1Service;
 import com.example.demo.services.ReactiveApp1Service;
@@ -18,6 +19,9 @@ import com.example.demo.services.LoggingService;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
     @Autowired
     private LoggingService loggingService;
 
@@ -41,6 +45,10 @@ public class TestController {
     @GetMapping("/call-async-flow-to-spring-app-4")
     public CompletableFuture<String> callAsyncFlowToSpringApp4() {
         loggingService.logInfo("before calling");
+
+        String message = "Hello from spring-app-3";
+        kafkaProducerService.sendMessage(message);
+        loggingService.logInfo("Message sent to Kafka: " + message);
 
         return asyncApp1Service.callSpringApp4Async()
                 .thenApply(response -> {

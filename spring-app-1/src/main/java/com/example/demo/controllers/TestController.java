@@ -69,10 +69,14 @@ public class TestController {
     }
     
 
-    @GetMapping("/call-async-flow-to-spring-app-2")
-    public CompletableFuture<String> callAsyncFlowToSpringApp2() {
-        var book = bookService.getBookById(1L);
-        loggingService.logInfo("Book: " + book.get().getTitle());
+    @GetMapping("/call-async-flow-to-spring-app-2/{id}")
+    public CompletableFuture<String> callAsyncFlowToSpringApp2(@PathVariable Long id) {
+        Optional<Book> book = bookService.getBookById(id);
+        if (book.isPresent()) {
+            loggingService.logInfo("Book: " + book.get().getTitle());
+        } else {
+            loggingService.logInfo("Book not found");
+        }
 
         loggingService.logInfo("before calling");
 

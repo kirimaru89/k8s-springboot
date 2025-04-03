@@ -12,6 +12,8 @@ import com.example.demo.enums.ResponseCode;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 
 import java.util.concurrent.TimeoutException;
 
@@ -90,6 +92,10 @@ public class CircuitBreakerCustomService {
     
 
     private ResponseEntity<ApiResponse<String>> handleException(Exception e, String bankName) {
+        Span span = Span.current();
+        span.recordException(e);
+        span.setStatus(StatusCode.ERROR, "There is an error");
+
         if (e instanceof CallNotPermittedException) {
             return ApiResponse.error(ResponseCode.CIRCUIT_BREAKER_OPEN, 
                 String.format("Circuit breaker is open for bank: %s", bankName));

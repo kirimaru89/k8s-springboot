@@ -17,7 +17,7 @@ data:
           example:
             slidingWindowSize: 8  # Số lượng request được theo dõi trong cửa sổ trượt
             failureRateThreshold: 50  # Khi tỷ lệ lỗi vượt 50%, circuit breaker sẽ chuyển sang trạng thái OPEN
-            waitDurationInOpenState: 5000  # Thời gian chờ 10 giây ở trạng thái OPEN trước khi chuyển sang HALF-OPEN
+            waitDurationInOpenState: 60000  # Thời gian chờ 10 giây ở trạng thái OPEN trước khi chuyển sang HALF-OPEN
             permittedNumberOfCallsInHalfOpenState: 3  # Cho phép 3 request thử nghiệm khi ở trạng thái HALF-OPEN
             slowCallRateThreshold: 50  # Nếu 50% request bị chậm, circuit breaker sẽ mở
             slowCallDurationThreshold: 2000  # Request nào mất hơn 2 giây được coi là chậm

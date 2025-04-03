@@ -122,3 +122,6 @@ k6 run --env PATTERN=circuitBreaker circuit-breaker-test.js
 
 # test circuit breaker - multiple banks
 k6 run --env PATTERN=circuitBreaker circuit-breaker-custom-test.js
+
+# call-async-flow-to-spring-app-2
+k6 run test-async.js   

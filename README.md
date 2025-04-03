@@ -116,3 +116,9 @@ helm uninstall my-vault -n monitoring
 
 # resilience config
 kubectl apply -f circuitbreaker/resilience-config.yaml
+
+# test circuit breaker - example
+k6 run --env PATTERN=circuitBreaker circuit-breaker-test.js
+
+# test circuit breaker - multiple banks
+k6 run --env PATTERN=circuitBreaker circuit-breaker-custom-test.js

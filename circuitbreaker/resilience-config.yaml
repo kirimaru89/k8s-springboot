@@ -24,13 +24,26 @@ data:
             minimumNumberOfCalls: 8  # Cần ít nhất 5 request để đánh giá
             slidingWindowType: COUNT_BASED  # Cửa sổ trượt dựa trên số lượng request // co thêm TIME_BASED - dựa trên thời gian - theo dõi request trong N giây gần nhất - N được định nghĩa ở slidingWindowSize
             automaticTransitionFromOpenToHalfOpenEnabled: true # cần cân nhắc về việc chuyển sang HALF-OPEN hay không - liên quan đến nghiệp vụ
-          example-2:
-            slidingWindowSize: 8  # Số lượng request được theo dõi trong cửa sổ trượt
-            failureRateThreshold: 50  # Khi tỷ lệ lỗi vượt 50%, circuit breaker sẽ chuyển sang trạng thái OPEN
-            waitDurationInOpenState: 5000  # Thời gian chờ 10 giây ở trạng thái OPEN trước khi chuyển sang HALF-OPEN
-            permittedNumberOfCallsInHalfOpenState: 3  # Cho phép 3 request thử nghiệm khi ở trạng thái HALF-OPEN
-            slowCallRateThreshold: 50  # Nếu 50% request bị chậm, circuit breaker sẽ mở
-            slowCallDurationThreshold: 2000  # Request nào mất hơn 2 giây được coi là chậm
-            minimumNumberOfCalls: 8  # Cần ít nhất 5 request để đánh giá
-            slidingWindowType: COUNT_BASED  # Cửa sổ trượt dựa trên số lượng request // co thêm TIME_BASED - dựa trên thời gian - theo dõi request trong N giây gần nhất - N được định nghĩa ở slidingWindowSize
-            automaticTransitionFromOpenToHalfOpenEnabled: true # cần cân nhắc về việc chuyển sang HALF-OPEN hay không - liên quan đến nghiệp vụ
+          bank-a:
+            registerHealthIndicator: true  # Đăng ký health indicator cho instance cụ thể
+            slidingWindowSize: 10  # Số lượng request trong cửa sổ trượt
+            failureRateThreshold: 50  # Ngưỡng tỷ lệ lỗi (%)
+            waitDurationInOpenState: 10000  # Thời gian chờ ở trạng thái mở (ms)
+            permittedNumberOfCallsInHalfOpenState: 3  # Số lượng request cho phép ở trạng thái nửa mở
+            slowCallRateThreshold: 50  # Ngưỡng tỷ lệ request chậm (%)
+            slowCallDurationThreshold: 2000  # Ngưỡng thời gian xem là request chậm (ms)
+            minimumNumberOfCalls: 10  # Số lượng request tối thiểu để đánh giá
+            slidingWindowType: COUNT_BASED  # Loại cửa sổ trượt dựa trên số lượng
+          bank-b:
+            registerHealthIndicator: true  # Đăng ký health indicator cho instance cụ thể
+            slidingWindowSize: 10  # Số lượng request trong cửa sổ trượt
+            failureRateThreshold: 20  # Ngưỡng tỷ lệ lỗi (%)
+            waitDurationInOpenState: 10000  # Thời gian chờ ở trạng thái mở (ms)
+            permittedNumberOfCallsInHalfOpenState: 3  # Số lượng request cho phép ở trạng thái nửa mở
+            slowCallRateThreshold: 50  # Ngưỡng tỷ lệ request chậm (%)
+            slowCallDurationThreshold: 2000  # Ngưỡng thời gian xem là request chậm (ms)
+            minimumNumberOfCalls: 10  # Số lượng request tối thiểu để đánh giá
+            slidingWindowType: COUNT_BASED  # Loại cửa sổ trượt dựa trên số lượng
+            automaticTransitionFromOpenToHalfOpenEnabled: true
+        metrics:
+          enabled: true

@@ -40,10 +40,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: spring-app-1-service
-  annotations:
-    prometheus.io/scrape: "true"  # Enable scraping for Prometheus via service discovery
-    prometheus.io/port: "8080"    # Specify the metrics port
-    prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (modify if needed)
+  # annotations:
+  #   prometheus.io/scrape: "true"  # Enable scraping for Prometheus via service discovery
+  #   prometheus.io/port: "8080"    # Specify the metrics port
+  #   prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (modify if needed)
 spec:
   selector:
     app: spring-app-1

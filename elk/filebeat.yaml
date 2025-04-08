@@ -8,25 +8,37 @@ data:
     filebeat.inputs:
     - type: container
       paths:
-        - /var/log/containers/*.log
+        - /var/log/containers/spring-app-*.log
       processors:
         - add_kubernetes_metadata:
             host: ${NODE_NAME}
             matchers:
-            - logs_path:
-                logs_path: "/var/log/containers/"
-        # Parse timestamp
+              - logs_path:
+                  logs_path: "/var/log/containers/"
+
         - dissect:
-            tokenizer: "%{timestamp} [%{thread}] %{level} %{logger} traceId=%{trace_id} spanId=%{span_id} className:%{class_name} function:%{function} - %{message}"
+            tokenizer: "%{timestamp} [%{thread}] %{level} %{logger} traceId=%{trace_id} spanId=%{span_id} className:%{class_name} function:%{function} - %{json_message}"
             field: "message"
             target_prefix: "parsed"
-        # Convert timestamp
+            ignore_failure: true
+
+        - decode_json_fields:
+            fields: ["parsed.json_message"]
+            target: ""
+            overwrite_keys: true
+            process_array: false
+            max_depth: 1
+
         - timestamp:
             field: "parsed.timestamp"
             layouts:
-              - '2006-01-02T15:04:05,999'
               - '2006-01-02 15:04:05,999'
-        # Cleanup and structure the data
+              - '2006-01-02T15:04:05.999'
+
+        - drop_fields:
+            fields: ["message"]
+            ignore_missing: true
+
         - rename:
             fields:
               - from: "parsed.trace_id"
@@ -43,9 +55,8 @@ data:
                 to: "logger.name"
               - from: "parsed.thread"
                 to: "thread.name"
-              - from: "parsed.message"
-                to: "message"
             ignore_missing: true
+
         - drop_fields:
             fields: ["parsed", "input", "agent", "ecs"]
 

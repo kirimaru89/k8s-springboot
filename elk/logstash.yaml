@@ -46,6 +46,10 @@ data:
         ilm_pattern => "{now/d}-000001"
         ilm_policy => "spring-logs-policy"
       }
+      # Add stdout output for debugging
+      stdout {
+        codec => rubydebug
+      }
     }
 
 ---

@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    
+    filter {
+      if [kubernetes][container][name] =~ "spring-app.*" {
+        mutate {
+          add_field => {
+            "cluster_name" => "development"
+            "env" => "development"
+          }
+        }
+        
+        # Convert log level to lowercase for consistency
+        mutate {
+          lowercase => [ "log.level" ]
+        }
+
+        # Remove unnecessary fields
+        prune {
+          whitelist_names => ["^message$", "^timestamp$", "^trace", "^class", "^function", 
+                            "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$"]
+        }
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "spring-logs-%{+YYYY.MM.dd}"
+        # Index lifecycle management
+        ilm_enabled => true
+        ilm_rollover_alias => "spring-logs"
+        ilm_pattern => "{now/d}-000001"
+        ilm_policy => "spring-logs-policy"
+        # Custom index template settings
+        template_overwrite => true
+        template => {
+          "settings" => {
+            "number_of_shards" => 1,
+            "number_of_replicas" => 0
+          },
+          "mappings" => {
+            "properties" => {
+              "trace.id" => { "type" => "keyword" },
+              "trace.span_id" => { "type" => "keyword" },
+              "log.level" => { "type" => "keyword" },
+              "class.name" => { "type" => "keyword" },
+              "function.name" => { "type" => "keyword" },
+              "logger.name" => { "type" => "keyword" },
+              "thread.name" => { "type" => "keyword" },
+              "message" => { "type" => "text" },
+              "@timestamp" => { "type" => "date" }
+            }
+          }
+        }
+      }
+    }

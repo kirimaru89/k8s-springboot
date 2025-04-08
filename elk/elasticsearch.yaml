@@ -1,24 +1,7 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: elasticsearch
-  labels:
-    app: elasticsearch
-spec:
-  ports:
-    - port: 9200
-      name: rest
-    - port: 9300
-      name: inter-node
-  selector:
-    app: elasticsearch
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: elasticsearch
-  labels:
-    app: elasticsearch
 spec:
   replicas: 1
   selector:
@@ -30,32 +13,38 @@ spec:
         app: elasticsearch
     spec:
       containers:
-      - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
-        env:
-        - name: discovery.type
-          value: single-node
-        - name: ES_JAVA_OPTS
-          value: "-Xms512m -Xmx512m"
-        - name: xpack.security.enabled
-          value: "false"
-        ports:
-        - containerPort: 9200
-          name: rest
-          protocol: TCP
-        - containerPort: 9300
-          name: inter-node
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1Gi
-          requests:
-            cpu: 100m
-            memory: 512Mi
-        volumeMounts:
-        - name: elasticsearch-data
-          mountPath: /usr/share/elasticsearch/data
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+          env:
+            - name: discovery.type
+              value: single-node
+            - name: xpack.security.enabled
+              value: "false"
+            - name: xpack.security.http.ssl.enabled
+              value: "false"
+            - name: xpack.security.transport.ssl.enabled
+              value: "false"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
       volumes:
-      - name: elasticsearch-data
-        emptyDir: {} 
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+spec:
+  ports:
+    - port: 9200
+      name: http
+    - port: 9300
+      name: transport
+  selector:
+    app: elasticsearch

@@ -42,20 +42,15 @@ docker run -d --name stanfordoradb \
 helm install my-redis bitnami/redis --version 20.11.3
 
 # elasticsearch
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-es bitnami/elasticsearch \
-  --version 21.4.9 \
-  --namespace logging \
-  --create-namespace \
-  -f elk/elasticsearch-values.yaml
+kubectl apply -f elk/elasticsearch.yaml
+kubectl rollout restart deployment elasticsearch
+
+# kibana
+kubectl apply -f elk/kibana.yaml
+kubectl rollout restart deployment kibana
 
 # filebeat
-helm repo add elastic https://helm.elastic.co
-helm install my-elasticsearch elastic/elasticsearch \
-  --version 8.5.1 \
-  --namespace logging \
-  --create-namespace \
-  -f elk/elasticsearch-values.yaml
+
 
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \
@@ -143,3 +138,5 @@ k6 run --env PATTERN=circuitBreaker circuit-breaker-custom-test.js
 k6 run test-async.js
 
 {name=~".*/api/.*"}
+
+rm -f /var/log/containers/*

@@ -49,8 +49,13 @@ kubectl rollout restart deployment elasticsearch
 kubectl apply -f elk/kibana.yaml
 kubectl rollout restart deployment kibana
 
-# filebeat
+# logstash
+kubectl apply -f elk/logstash.yaml
+kubectl rollout restart deployment logstash
 
+# filebeat
+kubectl apply -f elk/filebeat.yaml
+kubectl rollout restart daemonset filebeat
 
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \

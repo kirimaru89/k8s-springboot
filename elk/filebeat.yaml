@@ -1,3 +1,4 @@
+# First: The better ConfigMap from filebeat-config.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,12 +15,48 @@ data:
             matchers:
             - logs_path:
                 logs_path: "/var/log/containers/"
+        # Parse timestamp
+        - dissect:
+            tokenizer: "%{timestamp} [%{thread}] %{level} %{logger} traceId=%{trace_id} spanId=%{span_id} className:%{class_name} function:%{function} - %{message}"
+            field: "message"
+            target_prefix: "parsed"
+        # Convert timestamp
+        - timestamp:
+            field: "parsed.timestamp"
+            layouts:
+              - '2006-01-02T15:04:05,999'
+              - '2006-01-02 15:04:05,999'
+        # Cleanup and structure the data
+        - rename:
+            fields:
+              - from: "parsed.trace_id"
+                to: "trace.id"
+              - from: "parsed.span_id"
+                to: "trace.span_id"
+              - from: "parsed.class_name"
+                to: "class.name"
+              - from: "parsed.function"
+                to: "function.name"
+              - from: "parsed.level"
+                to: "log.level"
+              - from: "parsed.logger"
+                to: "logger.name"
+              - from: "parsed.thread"
+                to: "thread.name"
+              - from: "parsed.message"
+                to: "message"
+            ignore_missing: true
+        - drop_fields:
+            fields: ["parsed", "input", "agent", "ecs"]
 
     output.logstash:
-      hosts: ["logstash:5044"]
-
+      hosts: ["logstash.default.svc.cluster.local:5044"]
+      ttl: 120
+      
     logging.level: info
+
 ---
+# Second: The DaemonSet and RBAC parts from original filebeat.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -86,6 +123,7 @@ spec:
         hostPath:
           path: /var/lib/filebeat-data
           type: DirectoryOrCreate
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -99,6 +137,7 @@ roleRef:
   kind: ClusterRole
   name: filebeat
   apiGroup: rbac.authorization.k8s.io
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -116,10 +155,11 @@ rules:
   - get
   - list
   - watch
+
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: filebeat
   labels:
-    app: filebeat 
+    app: filebeat

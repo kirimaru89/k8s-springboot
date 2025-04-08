@@ -1,3 +1,4 @@
+# First: ConfigMap with better configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,25 +16,40 @@ data:
     }
     
     filter {
-      json {
-        source => "message"
-        skip_on_invalid_json => true
-      }
-      
-      mutate {
-        add_field => {
-          "cluster_name" => "development"
+      if [kubernetes][container][name] =~ "spring-app.*" {
+        mutate {
+          add_field => {
+            "cluster_name" => "development"
+            "env" => "development"
+          }
+        }
+        
+        # Convert log level to lowercase for consistency
+        mutate {
+          lowercase => [ "log.level" ]
+        }
+
+        # Remove unnecessary fields
+        prune {
+          whitelist_names => ["^message$", "^timestamp$", "^trace", "^class", "^function", 
+                            "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$"]
         }
       }
     }
     
     output {
       elasticsearch {
-        hosts => ["elasticsearch:9200"]
-        index => "logstash-%{+YYYY.MM.dd}"
+        hosts => ["elasticsearch.default.svc.cluster.local:9200"]
+        index => "spring-logs-%{+YYYY.MM.dd}"
+        ilm_enabled => true
+        ilm_rollover_alias => "spring-logs"
+        ilm_pattern => "{now/d}-000001"
+        ilm_policy => "spring-logs-policy"
       }
     }
+
 ---
+# Second: Service and Deployment from original logstash.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -47,6 +63,7 @@ spec:
     protocol: TCP
   selector:
     app: logstash
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -87,4 +104,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: logstash-config 
+          name: logstash-config

@@ -48,7 +48,7 @@ logging:
     path: logs/
 
 logbook:
-  format.style: http
+  format.style: json
   include: /**  # This ensures all paths are logged
   exclude: /actuator/**  # Optional exclusions
   obfuscate:

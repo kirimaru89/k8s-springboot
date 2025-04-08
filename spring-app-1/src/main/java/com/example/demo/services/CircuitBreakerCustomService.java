@@ -1,21 +1,23 @@
 package com.example.demo.services;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.util.concurrent.TimeoutException;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import com.example.demo.dto.CircuitBreakerTestRequest;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.CircuitBreakerTestRequest;
 import com.example.demo.enums.ResponseCode;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+
 import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-
-import java.util.concurrent.TimeoutException;
 
 @Service
 public class CircuitBreakerCustomService {
@@ -49,8 +51,9 @@ public class CircuitBreakerCustomService {
                 // Giả lập xử lý nghiệp vụ
                 if ("fail".equalsIgnoreCase(operation)) {
                     recordMetrics(bankName, operation, false);
-                    return ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR, 
-                        String.format("Simulated failure for bank: %s", bankName));
+                    throw new RuntimeException("Simulated failure for bank: " + bankName);
+                    // return ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR, 
+                    //     String.format("Simulated failure for bank: %s", bankName));
                 }
                 if ("timeout".equalsIgnoreCase(operation)) {
                     try {
@@ -66,12 +69,12 @@ public class CircuitBreakerCustomService {
                 }
 
                 // Xử lý tỷ lệ lỗi khác nhau cho từng bank
-                double failureRate = "BANK_A".equals(bankName) ? 0.4 : 0.2; // Bank A có tỷ lệ lỗi cao hơn
-                if (Math.random() < failureRate) {
-                    recordMetrics(bankName, operation, false);
-                    return ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR,
-                        String.format("Random failure for bank: %s", bankName));
-                }
+                // double failureRate = "BANK_A".equals(bankName) ? 0.4 : 0.2; // Bank A có tỷ lệ lỗi cao hơn
+                // if (Math.random() < failureRate) {
+                //     recordMetrics(bankName, operation, false);
+                //     return ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR,
+                //         String.format("Random failure for bank: %s", bankName));
+                // }
 
                 recordMetrics(bankName, operation, true);
                 return ApiResponse.success("Operation successful for bank: " + bankName);

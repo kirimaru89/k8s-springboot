@@ -41,6 +41,22 @@ docker run -d --name stanfordoradb \
 # redis
 helm install my-redis bitnami/redis --version 20.11.3
 
+# elasticsearch
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install my-es bitnami/elasticsearch \
+  --version 21.4.9 \
+  --namespace logging \
+  --create-namespace \
+  -f elk/elasticsearch-values.yaml
+
+# filebeat
+helm repo add elastic https://helm.elastic.co
+helm install my-elasticsearch elastic/elasticsearch \
+  --version 8.5.1 \
+  --namespace logging \
+  --create-namespace \
+  -f elk/elasticsearch-values.yaml
+
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \
   -t spring-app-1:latest \
@@ -124,4 +140,6 @@ k6 run --env PATTERN=circuitBreaker circuit-breaker-test.js
 k6 run --env PATTERN=circuitBreaker circuit-breaker-custom-test.js
 
 # call-async-flow-to-spring-app-2
-k6 run test-async.js   
+k6 run test-async.js
+
+{name=~".*/api/.*"}

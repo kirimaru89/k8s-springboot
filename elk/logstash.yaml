@@ -30,7 +30,7 @@ data:
         # Parse log line with grok
         grok {
           match => {
-            "message" => "^%{TIMESTAMP_ISO8601:container_timestamp} stdout F %{TIMESTAMP_ISO8601:timestamp} \[%{DATA:thread.name}\] %{LOGLEVEL:log.level} +%{JAVACLASS:logger.name} traceId=%{NOTSPACE:trace.id} spanId=%{NOTSPACE:trace.span_id} className:%{NOTSPACE:class.name} function:%{NOTSPACE:function.name} - %{GREEDYDATA:message}"
+            "message" => "^%{TIMESTAMP_ISO8601:timestamp} \[%{DATA:thread_name}\] %{LOGLEVEL:log_level} %{JAVACLASS:logger_name} traceId=%{NOTSPACE:trace.id} spanId=%{NOTSPACE:span.id} className:%{SPACE}*(?:%{NOTSPACE:class.name}|) function:%{SPACE}*(?:%{NOTSPACE:function.name}|) - %{GREEDYDATA:log_content}"
           }
           tag_on_failure => ["grok_failure"]
         }
@@ -43,9 +43,8 @@ data:
 
         # Decode embedded JSON if present
         json {
-          source => "message"
+          source => "log_content"
           target => "parsed_json"
-          remove_field => ["message"]
         }
 
         # Normalize log level
@@ -53,10 +52,10 @@ data:
           lowercase => [ "log.level" ]
         }
 
-        # Keep only useful fields - add raw_message to the whitelist
+        # Keep only useful fields
         prune {
           whitelist_names => ["^@timestamp$", "^timestamp$", "^trace", "^class", "^function", 
-                              "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$", "^parsed_json", "^raw_message$"]
+                              "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$", "^parsed_json", "^raw_message$", "^message$", "^log_content$"]
         }
       }
     }

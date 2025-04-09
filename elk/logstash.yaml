@@ -30,7 +30,7 @@ data:
         # Parse log line with grok
         grok {
           match => {
-            "message" => "^%{TIMESTAMP_ISO8601:timestamp} \[%{DATA:thread.name}\] %{LOGLEVEL:log.level}\s+%{JAVACLASS:logger.name} traceId=%{NOTSPACE:trace.id} spanId=%{NOTSPACE:trace.span_id} className:%{NOTSPACE:class.name} function:%{NOTSPACE:function.name} - %{GREEDYDATA:log_content}"
+            "message" => "^%{TIMESTAMP_ISO8601:timestamp} \[%{DATA:thread.name}\] %{LOGLEVEL:log.level}\s+%{JAVACLASS:logger.name} traceId=%{NOTSPACE:trace.id} spanId=%{NOTSPACE:trace.span_id} className:(?:%{NOTSPACE:class.name}|) function:(?:%{NOTSPACE:function.name}|) - %{GREEDYDATA:log_content}"
           }
           tag_on_failure => ["grok_failure"]
         }

@@ -1,16 +1,19 @@
 package com.example.demo.services;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.models.Book;
 import com.example.demo.models.User;
 import com.example.demo.repositories.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.example.demo.repositories.UserRepository;
 import com.example.demo.security.JwtUtil;
-import org.springframework.cache.annotation.Cacheable;
 
-import java.util.List;
-import java.util.Optional;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 @Service
 public class BookService {
@@ -36,6 +39,7 @@ public class BookService {
         return bookRepository.save(book);
     }
 
+    @WithSpan
     @Cacheable(value = "books", key = "#id")
     public Optional<Book> getBookById(Long id) {
         System.out.println("Fetching book from database...");

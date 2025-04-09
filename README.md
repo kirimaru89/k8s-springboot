@@ -57,6 +57,12 @@ kubectl rollout restart deployment logstash
 kubectl apply -f elk/filebeat.yaml
 kubectl rollout restart daemonset filebeat
 
+kubectl delete daemonset filebeat
+kubectl delete configmap filebeat-config
+kubectl delete serviceaccount filebeat
+kubectl delete clusterrole filebeat
+kubectl delete clusterrolebinding filebeat
+
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \
   -t spring-app-1:latest \

@@ -1,4 +1,4 @@
-# First: The better ConfigMap from filebeat-config.yaml
+# --- ConfigMap: Filebeat sending raw logs to Logstash ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,68 +6,24 @@ metadata:
 data:
   filebeat.yml: |
     filebeat.inputs:
-    - type: container
-      paths:
-        - /var/log/containers/spring-app-*.log
-      processors:
-        - add_kubernetes_metadata:
-            host: ${NODE_NAME}
-            matchers:
-              - logs_path:
-                  logs_path: "/var/log/containers/"
-
-        - dissect:
-            tokenizer: "%{timestamp} [%{thread}] %{level} %{logger} traceId=%{trace_id} spanId=%{span_id} className:%{class_name} function:%{function} - %{json_message}"
-            field: "message"
-            target_prefix: "parsed"
-            ignore_failure: true
-
-        - decode_json_fields:
-            fields: ["parsed.json_message"]
-            target: ""
-            overwrite_keys: true
-            process_array: false
-            max_depth: 1
-
-        - timestamp:
-            field: "parsed.timestamp"
-            layouts:
-              - '2006-01-02 15:04:05,999'
-              - '2006-01-02T15:04:05.999'
-
-        - drop_fields:
-            fields: ["message"]
-            ignore_missing: true
-
-        - rename:
-            fields:
-              - from: "parsed.trace_id"
-                to: "trace.id"
-              - from: "parsed.span_id"
-                to: "trace.span_id"
-              - from: "parsed.class_name"
-                to: "class.name"
-              - from: "parsed.function"
-                to: "function.name"
-              - from: "parsed.level"
-                to: "log.level"
-              - from: "parsed.logger"
-                to: "logger.name"
-              - from: "parsed.thread"
-                to: "thread.name"
-            ignore_missing: true
-
-        - drop_fields:
-            fields: ["parsed", "input", "agent", "ecs"]
+      - type: container
+        paths:
+          - /var/log/containers/spring-app-*.log
+        processors:
+          - add_kubernetes_metadata:
+              host: ${NODE_NAME}
+              matchers:
+                - logs_path:
+                    logs_path: "/var/log/containers/"
 
     output.logstash:
       hosts: ["logstash.default.svc.cluster.local:5044"]
       ttl: 120
-      
-    logging.level: info
+
+    logging.level: debug
 
 ---
-# Second: The DaemonSet and RBAC parts from original filebeat.yaml
+# --- DaemonSet: Filebeat runs on every node ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -136,6 +92,7 @@ spec:
           type: DirectoryOrCreate
 
 ---
+# --- RBAC: Permissions for Filebeat to access Kubernetes metadata ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:

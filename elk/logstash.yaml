@@ -1,4 +1,4 @@
-# First: ConfigMap with better configuration
+# --- ConfigMap: Logstash config with parsing logic ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,53 +7,77 @@ data:
   logstash.yml: |
     http.host: "0.0.0.0"
     path.config: /usr/share/logstash/pipeline
-  
+
   logstash.conf: |
     input {
       beats {
         port => 5044
       }
     }
-    
+
     filter {
       if [kubernetes][container][name] =~ "spring-app.*" {
+
+        # First save the raw message
         mutate {
+          copy => { "message" => "raw_message" }
           add_field => {
             "cluster_name" => "development"
             "env" => "development"
           }
         }
-        
-        # Convert log level to lowercase for consistency
+
+        # Parse log line with grok
+        grok {
+          match => {
+            "message" => "^%{TIMESTAMP_ISO8601:container_timestamp} stdout F %{TIMESTAMP_ISO8601:timestamp} \[%{DATA:thread.name}\] %{LOGLEVEL:log.level} +%{JAVACLASS:logger.name} traceId=%{NOTSPACE:trace.id} spanId=%{NOTSPACE:trace.span_id} className:%{NOTSPACE:class.name} function:%{NOTSPACE:function.name} - %{GREEDYDATA:message}"
+          }
+          tag_on_failure => ["grok_failure"]
+        }
+
+        # Set @timestamp from Java log timestamp
+        date {
+          match => ["timestamp", "yyyy-MM-dd HH:mm:ss,SSS"]
+          target => "@timestamp"
+        }
+
+        # Decode embedded JSON if present
+        json {
+          source => "message"
+          target => "parsed_json"
+          remove_field => ["message"]
+        }
+
+        # Normalize log level
         mutate {
           lowercase => [ "log.level" ]
         }
 
-        # Remove unnecessary fields
+        # Keep only useful fields - add raw_message to the whitelist
         prune {
-          whitelist_names => ["^message$", "^timestamp$", "^trace", "^class", "^function", 
-                            "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$"]
+          whitelist_names => ["^@timestamp$", "^timestamp$", "^trace", "^class", "^function", 
+                              "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$", "^parsed_json", "^raw_message$"]
         }
       }
     }
-    
+
     output {
       elasticsearch {
-        hosts => ["elasticsearch.default.svc.cluster.local:9200"]
+        hosts => ["http://elasticsearch.default.svc.cluster.local:9200"]
         index => "spring-logs-%{+YYYY.MM.dd}"
         ilm_enabled => true
         ilm_rollover_alias => "spring-logs"
         ilm_pattern => "{now/d}-000001"
         ilm_policy => "spring-logs-policy"
       }
-      # Add stdout output for debugging
+
       stdout {
         codec => rubydebug
       }
     }
 
 ---
-# Second: Service and Deployment from original logstash.yaml
+# --- Service: Exposes port 5044 for Beats input ---
 apiVersion: v1
 kind: Service
 metadata:
@@ -62,13 +86,14 @@ metadata:
     app: logstash
 spec:
   ports:
-  - port: 5044
-    name: beats
-    protocol: TCP
+    - port: 5044
+      name: beats
+      protocol: TCP
   selector:
     app: logstash
 
 ---
+# --- Deployment: Runs Logstash with config volumes ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -86,26 +111,26 @@ spec:
         app: logstash
     spec:
       containers:
-      - name: logstash
-        image: docker.elastic.co/logstash/logstash:8.12.1
-        ports:
-        - containerPort: 5044
-          name: beats
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1Gi
-          requests:
-            cpu: 200m
-            memory: 512Mi
-        volumeMounts:
-        - name: config-volume
-          mountPath: /usr/share/logstash/config/logstash.yml
-          subPath: logstash.yml
-        - name: config-volume
-          mountPath: /usr/share/logstash/pipeline/logstash.conf
-          subPath: logstash.conf
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.12.1
+          ports:
+            - containerPort: 5044
+              name: beats
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: config-volume
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: logstash.conf
       volumes:
-      - name: config-volume
-        configMap:
-          name: logstash-config
+        - name: config-volume
+          configMap:
+            name: logstash-config

@@ -41,10 +41,24 @@ data:
           target => "@timestamp"
         }
 
-        # Decode embedded JSON if present
+        # Attempt to decode JSON
         json {
           source => "log_content"
           target => "parsed_json"
+          add_tag => ["json_parsed"]
+        }
+
+        # Extract URI from parsed JSON if successful
+        if "json_parsed" in [tags] and [parsed_json][uri] {
+          mutate {
+            add_field => { "extracted_uri" => "%{[parsed_json][uri]}" }
+          }
+        } else {
+          # Fallback to grok if JSON parsing fails
+          grok {
+            match => { "log_content" => '"uri":"%{URI:extracted_uri}"' }
+            tag_on_failure => ["uri_extraction_failure"]
+          }
         }
 
         # Normalize log level
@@ -55,7 +69,7 @@ data:
         # Keep only useful fields
         prune {
           whitelist_names => ["^@timestamp$", "^timestamp$", "^trace", "^class", "^function", 
-                              "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$", "^parsed_json", "^raw_message$", "^message$", "^log_content$"]
+                              "^log", "^logger", "^thread", "^kubernetes", "^cluster_name$", "^env$", "^parsed_json", "^raw_message$", "^message$", "^log_content$", "^extracted_uri$"]
         }
       }
     }

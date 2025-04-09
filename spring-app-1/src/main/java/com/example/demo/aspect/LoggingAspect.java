@@ -1,12 +1,13 @@
 package com.example.demo.aspect;
 
-import com.example.demo.services.LoggingService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+
+import com.example.demo.services.LoggingService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Aspect
 @Component
@@ -27,6 +28,7 @@ public class LoggingAspect {
             // Thêm controller và method name vào MDC
             MDC.put("className", className);
             MDC.put("function", methodName);
+            // System.out.println("logAroundController add to MDC: " + MDC.get("className") + " " + MDC.get("function"));
 
             // Log request
             Object[] args = joinPoint.getArgs();
@@ -40,7 +42,8 @@ public class LoggingAspect {
 
             return result;
         } finally {
-            MDC.clear();
+            MDC.remove("className");
+            MDC.remove("function");
         }
     }
 
@@ -54,6 +57,7 @@ public class LoggingAspect {
             // Thêm service và method name vào MDC
             MDC.put("className", className);
             MDC.put("function", methodName);
+            // System.out.println("logAroundService add to MDC: " + MDC.get("className") + " " + MDC.get("function"));
 
             // Log request
             Object[] args = joinPoint.getArgs();
@@ -67,7 +71,9 @@ public class LoggingAspect {
 
             return result;
         } finally {
-            MDC.clear();
+            // MDC.remove("className");
+            // MDC.remove("function");
+            // System.out.println("logAroundService MDC cleared: " + MDC.get("className") + " " + MDC.get("function"));
         }
     }
 }

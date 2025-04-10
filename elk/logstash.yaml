@@ -77,7 +77,7 @@ data:
     output {
       elasticsearch {
         hosts => ["http://elasticsearch.default.svc.cluster.local:9200"]
-        index => "spring-logs-%{+YYYY.MM.dd}"
+        index => "spring-logs-%{+YYYY.MM}"
         ilm_enabled => true
         ilm_rollover_alias => "spring-logs"
         ilm_pattern => "{now/d}-000001"

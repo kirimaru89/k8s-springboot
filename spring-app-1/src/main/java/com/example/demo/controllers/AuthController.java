@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.config.MyConfiguration;
+import com.example.demo.config.MyDataSourceProperties;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.security.JwtUtil;
@@ -32,8 +32,8 @@ public class AuthController {
     private VaultTemplate vaultTemplate;
 
     @Autowired
-    private MyConfiguration myConfiguration;
-    
+    private MyDataSourceProperties myDataSourceProperties;
+
     @Autowired
     private UserService userService;
 
@@ -111,8 +111,8 @@ public class AuthController {
         System.out.println("🧪 Raw Vault Response: " + response.getData());
 
         loggingService.logInfo("From vault:");
-        loggingService.logInfo("Username: " + myConfiguration.getUsername());
-        loggingService.logInfo("Password: " + myConfiguration.getPassword());
+        loggingService.logInfo("Username: " + myDataSourceProperties.getUsername());
+        loggingService.logInfo("Password: " + myDataSourceProperties.getPassword());
         // COUNTER - Track total login attempts 
         loginAttemptsCounter.increment();
         

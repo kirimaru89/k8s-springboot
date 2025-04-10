@@ -1,25 +1,39 @@
 package com.example.demo.controllers;
 
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.vault.core.VaultTemplate;
+import org.springframework.vault.support.VaultResponse;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.config.MyConfiguration;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.security.JwtUtil;
+import com.example.demo.services.App1Service;
+import com.example.demo.services.LoggingService;
+import com.example.demo.services.UserService;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.security.JwtUtil;
-import com.example.demo.services.App1Service;
-import com.example.demo.services.UserService;
-import com.example.demo.services.LoggingService;
-
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicInteger;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    @Autowired
+    private VaultTemplate vaultTemplate;
+
+    @Autowired
+    private MyConfiguration myConfiguration;
+    
     @Autowired
     private UserService userService;
 
@@ -91,6 +105,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest request) {
+        VaultResponse response = vaultTemplate.read("secret/data/spring-app-1");
+        loggingService.logInfo("🧪 Raw Vault Response: " + response.getData());
+
+        System.out.println("🧪 Raw Vault Response: " + response.getData());
+
+        loggingService.logInfo("From vault:");
+        loggingService.logInfo("Username: " + myConfiguration.getUsername());
+        loggingService.logInfo("Password: " + myConfiguration.getPassword());
         // COUNTER - Track total login attempts 
         loginAttemptsCounter.increment();
         

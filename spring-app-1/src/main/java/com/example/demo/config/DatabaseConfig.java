@@ -1,14 +1,15 @@
 package com.example.demo.config;
 
 import javax.sql.DataSource;
-import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
-@Configuration
+import com.zaxxer.hikari.HikariDataSource;
+
+@Component
 public class DatabaseConfig {
-
     @Value("${spring.datasource.url}")
     private String url;
     

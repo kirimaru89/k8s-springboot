@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.config.MyDataSourceProperties;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.security.JwtUtil;
@@ -30,9 +29,6 @@ import io.micrometer.core.instrument.Timer;
 public class AuthController {
     @Autowired
     private VaultTemplate vaultTemplate;
-
-    @Autowired
-    private MyDataSourceProperties myDataSourceProperties;
 
     @Autowired
     private UserService userService;
@@ -108,11 +104,6 @@ public class AuthController {
         VaultResponse response = vaultTemplate.read("secret/data/spring-app-1");
         loggingService.logInfo("🧪 Raw Vault Response: " + response.getData());
 
-        System.out.println("🧪 Raw Vault Response: " + response.getData());
-
-        loggingService.logInfo("From vault:");
-        loggingService.logInfo("Username: " + myDataSourceProperties.getUsername());
-        loggingService.logInfo("Password: " + myDataSourceProperties.getPassword());
         // COUNTER - Track total login attempts 
         loginAttemptsCounter.increment();
         

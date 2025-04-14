@@ -3,12 +3,14 @@ package com.example.demo.config;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import com.zaxxer.hikari.HikariDataSource;
 
 @Component
+@RefreshScope
 public class DatabaseConfig {
     @Value("${spring.datasource.url}")
     private String url;
@@ -23,6 +25,7 @@ public class DatabaseConfig {
     private String password;
     
     @Bean
+    @RefreshScope
     public DataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(url);

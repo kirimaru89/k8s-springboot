@@ -23,6 +23,11 @@ spring:
         backend: secret
         default-context: spring-app-1
         application-name: spring-app-1
+      config:
+        # Add these settings
+        watch:
+          enabled: true
+        refresh-interval: 30000  # 30 seconds
   config:
     import:
       - "optional:vault://"

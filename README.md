@@ -184,12 +184,7 @@ vault kv put secret/spring-app-1/kubernetes \
   spring.datasource.username="user" \
   spring.datasource.password="passwordtest"
 
-vault kv put secret/spring-app-1/kubernetes \
-  spring.datasource.url="jdbc:mysql://mysql:3306/book_db" \
-  spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
-  spring.datasource.username="user" \
-  spring.datasource.password="password"
-
+vault kv get secret/spring-app-1/kubernetes
 
 # policy file
 path "secret/data/spring-app-1/kubernetes" {
@@ -199,6 +194,8 @@ path "secret/data/spring-app-1" {
   capabilities = ["read"]
 }
 
+export VAULT_ADDR=http://127.0.0.1:8200
+
 vault policy write spring-app-1-kubernetes spring-app-1-kubernetes.hcl
 
 vault token create \
@@ -206,3 +203,9 @@ vault token create \
   -policy=spring-app-1-kubernetes \
   -ttl=24h \
   -display-name="spring-app-1"
+
+vault kv put secret/spring-app-1/kubernetes \
+  spring.datasource.url="jdbc:mysql://mysql:3306/book_db" \
+  spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+  spring.datasource.username="user" \
+  spring.datasource.password="password"

@@ -2,48 +2,68 @@ package com.example.demo.services;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 
 @Service
 public class KafkaProducerService {
+
     private static final Logger log = LoggerFactory.getLogger(KafkaProducerService.class);
     private static final String TOPIC = "app-communication";
     
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     
-    /**
-     * Send message to Kafka with circuit breaker protection and error handling
-     */
-    @CircuitBreaker(name = "kafkaCircuitBreaker", fallbackMethod = "sendMessageFallback")
     public void sendMessage(String message) {
-        String transactionId = UUID.randomUUID().toString();
-        log.info("Sending message to Kafka [txId={}]: {}", transactionId, message);
+        Span currentSpan = Span.current();
+        SpanContext context = currentSpan.getSpanContext();
         
         try {
-            // Add transaction ID to the message or headers for end-to-end tracing
-            CompletableFuture<SendResult<String, String>> future = 
-                kafkaTemplate.send(TOPIC, transactionId, message);
-                
-            // Set timeout for the send operation
-            SendResult<String, String> result = future.get(10, TimeUnit.SECONDS);
-            
-            log.info("Message sent to topic {} with offset {} [txId={}]", 
-                TOPIC, result.getRecordMetadata().offset(), transactionId);
-                
+            kafkaTemplate.executeInTransaction(kt -> {
+                String transactionId = null;
+                if (context.isValid()) {
+                    String traceId = context.getTraceId();
+                    String spanId = context.getSpanId();
+                    log.info("Current traceId={}, spanId={}", traceId, spanId);
+                    log.info("Sending message to Kafka [txId={}]: {}", traceId, message);
+                    transactionId = traceId;
+                }
+
+                try {
+                    CompletableFuture<SendResult<String, String>> future = 
+                        kt.send(TOPIC, transactionId, message);
+
+                    SendResult<String, String> result = future.get(10, TimeUnit.SECONDS);
+
+                    log.info("Message sent to topic {} with offset {} [txId={}]", 
+                            TOPIC, result.getRecordMetadata().offset(), transactionId);
+                    
+                    return true; // Return true to indicate success
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Interrupted while sending to Kafka [txId={}]", transactionId, e);
+                    throw new KafkaException("Interrupted during Kafka transaction", e);
+                } catch (ExecutionException | TimeoutException e) {
+                    log.error("Failed to send message [txId={}]: {}", transactionId, e.getMessage(), e);
+                    throw new KafkaException("Failed to send message to Kafka", e);
+                }
+            });
         } catch (Exception ex) {
-            log.error("Failed to send message to Kafka [txId={}]: {}", 
-                transactionId, ex.getMessage(), ex);
-            throw new RuntimeException("Error sending message to Kafka", ex);
+            log.error("Transaction failed [txId={}]: {}", 
+                    context.isValid() ? context.getTraceId() : "unknown", ex.getMessage(), ex);
+            throw new RuntimeException("Error in Kafka transaction", ex);
         }
     }
     

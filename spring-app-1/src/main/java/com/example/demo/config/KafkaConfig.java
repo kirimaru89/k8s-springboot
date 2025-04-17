@@ -22,9 +22,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 public class KafkaConfig {
     private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${spring.kafka.consumer.group-id:spring-app-1}")
-    private String groupId;
-    
     @Value("${kafka.listener.missing-topics-fatal:false}")
     private boolean missingTopicsFatal;
     

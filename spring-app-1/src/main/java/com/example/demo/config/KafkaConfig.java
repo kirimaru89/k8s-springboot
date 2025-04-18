@@ -1,7 +1,5 @@
 package com.example.demo.config;
 
-import java.time.Duration;
-
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +11,6 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
-
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 @Configuration
 public class KafkaConfig {
@@ -62,19 +56,5 @@ public class KafkaConfig {
         // Tracing: Enable observations for the template to preserve trace context
         template.setObservationEnabled(true);
         return template;
-    }
-    
-    @Bean
-    public CircuitBreaker kafkaCircuitBreaker() {
-        CircuitBreakerConfig config = CircuitBreakerConfig.custom()
-                .failureRateThreshold(50)
-                .waitDurationInOpenState(Duration.ofSeconds(10))
-                .permittedNumberOfCallsInHalfOpenState(5)
-                .slidingWindowSize(10)
-                .minimumNumberOfCalls(5)
-                .build();
-        
-        CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(config);
-        return registry.circuitBreaker("kafkaCircuitBreaker");
     }
 }

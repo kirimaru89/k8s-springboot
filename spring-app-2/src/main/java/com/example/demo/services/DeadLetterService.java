@@ -11,7 +11,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 @Service
 public class DeadLetterService {
     private static final Logger log = LoggerFactory.getLogger(DeadLetterService.class);
-    private static final String DLT_TOPIC = "dlt.app-communication";
+    private static final String DLT_TOPIC = "app-communication-dlt";
     
     /**
      * Listen to all messages in the Dead Letter Topic

@@ -29,18 +29,17 @@ public class KafkaProducerService {
     public void sendMessage(String message) {
         Span currentSpan = Span.current();
         SpanContext context = currentSpan.getSpanContext();
-        
+        String traceId = null;
+        if (context.isValid()) {
+            traceId = context.getTraceId();
+            String spanId = context.getSpanId();
+            log.info("Current traceId={}, spanId={}", traceId, spanId);
+            log.info("Sending message to Kafka [txId={}]: {}", traceId, message);
+        }
+
+        final String transactionId = (traceId != null) ? traceId : UUID.randomUUID().toString();
         try {
             kafkaTemplate.executeInTransaction(kt -> {
-                String transactionId = null;
-                if (context.isValid()) {
-                    String traceId = context.getTraceId();
-                    String spanId = context.getSpanId();
-                    log.info("Current traceId={}, spanId={}", traceId, spanId);
-                    log.info("Sending message to Kafka [txId={}]: {}", traceId, message);
-                    transactionId = traceId;
-                }
-
                 try {
                     CompletableFuture<SendResult<String, String>> future = 
                         kt.send(TOPIC, transactionId, message);

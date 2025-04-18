@@ -30,7 +30,6 @@ public class KafkaConsumerService {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaConsumerService.class);
     private static final String TOPIC = "app-communication";
-    private static final AtomicInteger messageCounter = new AtomicInteger(0);
 
     @Autowired
     private Tracer tracer;
@@ -48,18 +47,7 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.OFFSET) long offset,
             Acknowledgment acknowledgment
     ) {
-        int count = messageCounter.incrementAndGet();
-
-        ScopedSpan span = tracer.startScopedSpan("process-kafka-message");
         try {
-
-            // throw new RuntimeException("Simulated error");
-            span.tag("message.type", "kafka");
-            span.tag("kafka.topic", topic);
-            span.tag("kafka.partition", String.valueOf(partition));
-            span.tag("kafka.offset", String.valueOf(offset));
-            span.tag("transaction.id", transactionId);
-
             log.info("Processing message [txId={}] from topic {}, partition {}, offset {}: {}", 
                     transactionId, topic, partition, offset, message);
 
@@ -70,7 +58,6 @@ public class KafkaConsumerService {
             log.info("Successfully processed message [txId={}]", transactionId);
 
         } catch (Exception e) {
-            span.error(e);
             log.error("Error processing message [txId={}]: {}", transactionId, e.getMessage(), e);
 
             // Don't acknowledge - the message will be retried by the container's error handler
@@ -78,28 +65,33 @@ public class KafkaConsumerService {
             
             // Re-throw exception to let the error handler deal with it
             throw e;
-        } finally {
-            span.end();
         }
     }
 
     private void processTransactionIdempotently(String transactionId, String message, String topic, int partition, long offset, Acknowledgment acknowledgment) {
+        if (isMessageProcessed(transactionId)) {
+            log.info("Message [txId={}] already processed, skipping", transactionId);
+            return;
+        }
+
+        var artists = artistRepository.findAll();
+        log.info("Processing message [txId={}]:", transactionId);
+        for (Artist artist : artists) {
+            log.info("Processing artist [txId={}]: {}", transactionId, artist.getName());
+        }
+        
+        // Simulated check for message format validation
+        if (message != null && message.contains("error_simulation")) {
+            throw new IllegalArgumentException("Error processing message: Invalid format");
+        }
+    }
+
+    private boolean isMessageProcessed(String transactionId) {
         // In a real implementation, you would:
         // 1. Check if this transaction has already been processed (using Redis, DB, etc.)
         // 2. If already processed, return success without processing again
         // 3. If not processed, do the processing and mark as processed
-        throw new RuntimeException("Simulated failure");
-
-        // var artists = artistRepository.findAll();
-        // log.info("Processing message [txId={}]:", transactionId);
-        // for (Artist artist : artists) {
-        //     log.info("Processing artist [txId={}]: {}", transactionId, artist.getName());
-        // }
-        
-        // // Simulated check for message format validation
-        // if (message != null && message.contains("error_simulation")) {
-        //     throw new IllegalArgumentException("Error processing message: Invalid format");
-        // }
+        return false;
     }
 
     // Custom exception classes

@@ -3,6 +3,7 @@ package com.example.demo.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +17,13 @@ import org.springframework.kafka.retrytopic.RetryTopicConfiguration;
 import org.springframework.kafka.retrytopic.RetryTopicConfigurationBuilder;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.support.EndpointHandlerMethod;
+import org.springframework.stereotype.Component;
 
 
 @Configuration
@@ -52,16 +57,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
-        return new DeadLetterPublishingRecoverer(nonTransactionalKafkaTemplate,
-                (record, ex) -> {
-                    // Use Apache Kafka TopicPartition, not Spring's TopicPartitionOffset
-                    String dltTopic = "dlt." + record.topic();
-                    return new TopicPartition(dltTopic, record.partition());
-                });
-    }
-
-    @Bean
     public RetryTopicConfiguration retryTopicConfiguration(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
         return RetryTopicConfigurationBuilder
                 .newInstance()
@@ -69,6 +64,8 @@ public class KafkaConfig {
                 .fixedBackOff(5000)
                 .retryTopicSuffix("-retry")
                 .dltSuffix("-dlt")
+                // happen after message is sent to DLT
+                .dltHandlerMethod(new EndpointHandlerMethod("myCustomDltProcessor", "processDltMessage"))
                 .create(nonTransactionalKafkaTemplate);
     }
 

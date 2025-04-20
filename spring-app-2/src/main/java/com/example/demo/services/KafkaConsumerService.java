@@ -34,7 +34,6 @@ public class KafkaConsumerService {
     @Autowired
     private Tracer tracer;
     
-    @WithSpan
     @KafkaListener(
         topics = TOPIC, 
         groupId = "${spring.kafka.consumer.group-id}"

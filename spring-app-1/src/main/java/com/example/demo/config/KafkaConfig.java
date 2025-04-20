@@ -19,14 +19,14 @@ public class KafkaConfig {
     @Value("${kafka.listener.missing-topics-fatal:false}")
     private boolean missingTopicsFatal;
     
-    @Bean
-    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> kafkaTemplate) {
-        return new DeadLetterPublishingRecoverer(kafkaTemplate,
-                (record, ex) -> {
-                    String dltTopic = "dlt." + record.topic();
-                    return new TopicPartition(dltTopic, record.partition());
-                });
-    }
+    // @Bean
+    // public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> kafkaTemplate) {
+    //     return new DeadLetterPublishingRecoverer(kafkaTemplate,
+    //             (record, ex) -> {
+    //                 String dltTopic = "dlt." + record.topic();
+    //                 return new TopicPartition(dltTopic, record.partition());
+    //             });
+    // }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(

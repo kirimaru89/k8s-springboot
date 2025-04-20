@@ -209,3 +209,15 @@ vault kv put secret/spring-app-1/kubernetes \
   spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
   spring.datasource.username="user" \
   spring.datasource.password="password"
+
+
+vault.hashicorp.com/agent-inject: "true"
+vault.hashicorp.com/role: "springboot-role"
+
+vault.hashicorp.com/agent-inject-secret-db.txt: "secret/data/db-creds"
+vault.hashicorp.com/agent-inject-template-db.txt: |
+  DB_USERNAME={{ with secret "secret/data/db-creds" }}{{ .Data.data.username }}{{ end }}
+  DB_PASSWORD={{ with secret "secret/data/db-creds" }}{{ .Data.data.password }}{{ end }}
+
+
+  vault kv get secret/db-creds

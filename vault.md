@@ -1,3 +1,4 @@
+# https://developer.hashicorp.com/vault/tutorials/app-integration/spring-reload-secrets
 
 # 🛡️ Integrating HashiCorp Vault with Spring Boot using Vault Agent Injector (Kubernetes)
 

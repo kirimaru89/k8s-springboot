@@ -132,49 +132,32 @@ spec:
       labels:
         app: spring-app-3
       annotations:
+        # inject secrets into /vault/secrets/application.properties
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "spring-app-3-role"
-        vault.hashicorp.com/agent-inject-secret-db-username: "secret/data/spring-app-3/db"
-        vault.hashicorp.com/agent-inject-template-db-username: |
+        vault.hashicorp.com/agent-inject-secret-application.properties: "secret/data/spring-app-3/db"
+        vault.hashicorp.com/agent-inject-template-application.properties: |
           {{- with secret "secret/data/spring-app-3/db" -}}
-          {{ .Data.data.username }}
-          {{- end }}
-        vault.hashicorp.com/agent-inject-secret-db-password: "secret/data/spring-app-3/db"
-        vault.hashicorp.com/agent-inject-template-db-password: |
-          {{- with secret "secret/data/spring-app-3/db" -}}
-          {{ .Data.data.password }}
+          spring.datasource.url={{ index .Data.data "spring.datasource.url" }}
+          spring.datasource.driver-class-name={{ index .Data.data "spring.datasource.driver-class-name" }}
+          spring.datasource.username={{ index .Data.data "spring.datasource.username" }}
+          spring.datasource.password={{ index .Data.data "spring.datasource.password" }}
           {{- end }}
     spec:
       serviceAccountName: spring-app-sa
       containers:
-        - name: spring-app
-          image: your-docker-image
+        - name: spring-app-3
+          image: spring-app-3:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          # read secrets imported from /vault/secrets/ folder
           env:
-            - name: DB_USERNAME_FILE
-              value: /vault/secrets/db-username
-            - name: DB_PASSWORD_FILE
-              value: /vault/secrets/db-password
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: file:/vault/secrets/
 ```
 
 ---
-
-### 🔹 8. Configure Spring Boot (`application.yml`)
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: ${file:/vault/secrets/db-username}
-    password: ${file:/vault/secrets/db-password}
 ```
 
 ✅ Now Spring Boot reads secrets directly from files injected by Vault Agent.
-
----
-
-## ✅ Done! Secret Injection is Secure and Config-Driven 🎉
-- No shell `source`
-- No SDKs
-- Uses sidecar injector & file-based secret delivery
-- Easily supports secret rotation
-

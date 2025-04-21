@@ -23,7 +23,9 @@ spec:
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
 
+        # inject secrets into /vault/secrets/application.properties
         vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/template-static-secret-render-interval: "10s"
         vault.hashicorp.com/role: "spring-app-3-role"
         vault.hashicorp.com/agent-inject-secret-application.properties: "secret/data/spring-app-3/db"
         vault.hashicorp.com/agent-inject-template-application.properties: |
@@ -33,6 +35,8 @@ spec:
           spring.datasource.username={{ index .Data.data "spring.datasource.username" }}
           spring.datasource.password={{ index .Data.data "spring.datasource.password" }}
           {{- end }}
+        vault.hashicorp.com/agent-inject-command-application.properties: |
+          curl -s -X POST http://localhost:8080/actuator/refresh
     spec:
       serviceAccountName: spring-app-sa
       containers:
@@ -41,4 +45,7 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          # args: ["-c", "source /vault/secrets/db-creds.txt && java -jar app.jar"]
+          # read secrets imported from /vault/secrets/ folder
+          env:
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: file:/vault/secrets/

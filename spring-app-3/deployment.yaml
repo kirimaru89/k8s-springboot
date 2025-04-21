@@ -25,11 +25,13 @@ spec:
 
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "spring-app-3-role"
-        vault.hashicorp.com/agent-inject-secret-db-creds.txt: "secret/data/spring-app-3/db"
-        vault.hashicorp.com/agent-inject-template-db-creds.txt: |
+        vault.hashicorp.com/agent-inject-secret-application.properties: "secret/data/spring-app-3/db"
+        vault.hashicorp.com/agent-inject-template-application.properties: |
           {{- with secret "secret/data/spring-app-3/db" -}}
-          export DB_USERNAME="{{ .Data.data.username }}"
-          export DB_PASSWORD="{{ .Data.data.password }}"
+          spring.datasource.url={{ index .Data.data "spring.datasource.url" }}
+          spring.datasource.driver-class-name={{ index .Data.data "spring.datasource.driver-class-name" }}
+          spring.datasource.username={{ index .Data.data "spring.datasource.username" }}
+          spring.datasource.password={{ index .Data.data "spring.datasource.password" }}
           {{- end }}
     spec:
       serviceAccountName: spring-app-sa

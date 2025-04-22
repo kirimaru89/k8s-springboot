@@ -14,15 +14,25 @@ spring:
 
   cloud:
     vault:
-      uri: http://my-vault.monitoring.svc.cluster.local:8200
+      uri: http://host.docker.internal:8200
       scheme: http
-      token: 
+      token: my-spring-app-1-token
+      authentication: TOKEN
       kv:
         enabled: true
         backend: secret
-        default-context: bookapp
+        default-context: spring-app-1
+        application-name: spring-app-1
+      config:
+        # Add these settings
+        watch:
+          enabled: true
+        refresh-interval: 30000  # 30 seconds
   config:
-    import: "optional:file:app/config/logging/,optional:file:app/config/resilience/"
+    import:
+      - "optional:vault://"
+      - "optional:file:app/config/logging/"
+      - "optional:file:app/config/resilience/"
 
 # enable this to see otel logs in console
 # otel:
@@ -39,6 +49,7 @@ logging:
     com.example.demo: DEBUG
     org.springframework.web: INFO
     org.zalando.logbook: TRACE
+    org.springframework.vault: DEBUG
     # enable this to see otel logs in console
     # io.opentelemetry.exporter.otlp: DEBUG
     # io.opentelemetry.sdk.trace.export: DEBUG

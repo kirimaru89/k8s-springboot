@@ -151,3 +151,61 @@ k6 run test-async.js
 {name=~".*/api/.*"}
 
 rm -f /var/log/containers/*
+
+
+
+
+# create vault policy file
+vi spring-app-1-policy.hcl
+path "secret/data/spring-app-1" {
+  capabilities = ["read"]
+}
+
+# apply policy into vault
+vault policy write spring-app-1-policy spring-app-1-policy.hcl
+
+# list vault policies
+vault policy list
+
+# create token
+vault token create \
+  -id=my-spring-app-1-token \
+  -policy=spring-app-1-kubernetes \
+  -ttl=24h \
+  -display-name="spring-app-1"
+
+vault token lookup my-spring-app-1-token
+vault token revoke my-spring-app-1-token
+
+# put value into vault
+vault kv put secret/spring-app-1/kubernetes \
+  spring.datasource.url="jdbc:mysql://mysql:3306/book_db" \
+  spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+  spring.datasource.username="user" \
+  spring.datasource.password="passwordtest"
+
+vault kv get secret/spring-app-1/kubernetes
+
+# policy file
+path "secret/data/spring-app-1/kubernetes" {
+  capabilities = ["read"]
+}
+path "secret/data/spring-app-1" {
+  capabilities = ["read"]
+}
+
+export VAULT_ADDR=http://127.0.0.1:8200
+
+vault policy write spring-app-1-kubernetes spring-app-1-kubernetes.hcl
+
+vault token create \
+  -id=my-spring-app-1-token \
+  -policy=spring-app-1-kubernetes \
+  -ttl=24h \
+  -display-name="spring-app-1"
+
+vault kv put secret/spring-app-1/kubernetes \
+  spring.datasource.url="jdbc:mysql://mysql:3306/book_db" \
+  spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
+  spring.datasource.username="user" \
+  spring.datasource.password="password"

@@ -1,37 +1,59 @@
 package com.example.demo.config;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 
 @Configuration
 public class KafkaConfig {
+    private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
-    private String bootstrapServers;
+    @Value("${kafka.listener.missing-topics-fatal:false}")
+    private boolean missingTopicsFatal;
+    
+    // @Bean
+    // public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> kafkaTemplate) {
+    //     return new DeadLetterPublishingRecoverer(kafkaTemplate,
+    //             (record, ex) -> {
+    //                 String dltTopic = "dlt." + record.topic();
+    //                 return new TopicPartition(dltTopic, record.partition());
+    //             });
+    // }
 
     @Bean
-    public ProducerFactory<String, String> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+            ConsumerFactory<String, String> consumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = 
+            new ConcurrentKafkaListenerContainerFactory<>();
+            
+        factory.setConsumerFactory(consumerFactory);
         
-        return new DefaultKafkaProducerFactory<>(configProps);
+        // This enables trace context extraction from Kafka headers
+        factory.getContainerProperties().setObservationEnabled(true);
+        
+        // CRITICAL: Make missing topics non-fatal to allow application to start
+        factory.setMissingTopicsFatal(missingTopicsFatal);
+        
+        // Set autoStartup to false - we'll start listeners programmatically
+        // by KafkaListenerStarter.java
+        factory.setAutoStartup(false);
+
+        return factory;
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
-        KafkaTemplate<String, String> template = new KafkaTemplate<>(producerFactory());
-        // Enable observations for the template to preserve trace context
+    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+        KafkaTemplate<String, String> template = new KafkaTemplate<>(producerFactory);
+        
+        // Tracing: Enable observations for the template to preserve trace context
         template.setObservationEnabled(true);
         return template;
     }

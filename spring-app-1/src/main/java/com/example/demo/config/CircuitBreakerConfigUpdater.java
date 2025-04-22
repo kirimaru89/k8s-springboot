@@ -29,7 +29,7 @@ public class CircuitBreakerConfigUpdater {
 
     private void reloadAll() {
         if (properties.getInstances() == null || properties.getInstances().isEmpty()) {
-            System.err.println("⚠️ No circuit breaker configs found.");
+            // System.err.println("⚠️ No circuit breaker configs found.");
             return;
         }
 
@@ -57,20 +57,20 @@ public class CircuitBreakerConfigUpdater {
                 
                 if (!configsEqual(existingConfig, newConfig)) {
                     registry.replace(name, CircuitBreaker.of(name, newConfig));
-                    System.out.printf("✅ CircuitBreaker [%s] updated dynamically.%n", name);
+                    // System.out.printf("✅ CircuitBreaker [%s] updated dynamically.%n", name);
                 } else {
-                    System.out.printf("ℹ️ CircuitBreaker [%s] config unchanged, skipping update.%n", name);
+                    // System.out.printf("ℹ️ CircuitBreaker [%s] config unchanged, skipping update.%n", name);
                 }
                 
                 // get CircuitBreaker by name
                 CircuitBreaker circuitBreaker = registry.circuitBreaker(name);
-                System.out.println("🔍 Current CircuitBreaker configs:");
-                System.out.println(circuitBreaker.getCircuitBreakerConfig());
+                // System.out.println("🔍 Current CircuitBreaker configs:");
+                // System.out.println(circuitBreaker.getCircuitBreakerConfig());
 
-                System.out.println("--------end--------");
+                // System.out.println("--------end--------");
 
             } catch (Exception e) {
-                System.err.printf("❌ Error configuring CircuitBreaker [%s]: %s%n", name, e.getMessage());
+                // System.err.printf("❌ Error configuring CircuitBreaker [%s]: %s%n", name, e.getMessage());
                 e.printStackTrace();
             }
         });

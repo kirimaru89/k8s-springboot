@@ -194,6 +194,12 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-kubernetes-client-config</artifactId>
 		</dependency>
+
+		<!-- Vault Config -->
+		<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

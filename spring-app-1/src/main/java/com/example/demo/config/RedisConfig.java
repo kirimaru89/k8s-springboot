@@ -1,8 +1,11 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -17,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -24,10 +29,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.interceptor.LoggingCacheErrorHandler;
+import org.springframework.boot.actuate.metrics.cache.CacheMetricsRegistrar;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import java.time.Duration;
 @Configuration
-public class RedisConfig {
+public class RedisConfig implements CachingConfigurer {
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Value("${spring.data.redis.host}")
     private String redisHost;
@@ -117,5 +130,21 @@ public class RedisConfig {
                 // Cache "users" có thời gian sống 1 giờ
                 .withCacheConfiguration("users", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)))
                 .build();
+    }
+
+    // prevent redis error from stopping the endpoint if using Cacheable annotation
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new LoggingCacheErrorHandler();
+    }
+
+    // register cache to metrics
+    @EventListener(ApplicationReadyEvent.class)
+    public void bindCacheToRegistry() {
+        CacheManager cacheManager = applicationContext.getBean(CacheManager.class);
+        CacheMetricsRegistrar cacheMetricsRegistrar = applicationContext.getBean(CacheMetricsRegistrar.class);
+
+        final Cache booksCache = cacheManager.getCache("books");
+        cacheMetricsRegistrar.bindCacheToRegistry(booksCache);
     }
 }

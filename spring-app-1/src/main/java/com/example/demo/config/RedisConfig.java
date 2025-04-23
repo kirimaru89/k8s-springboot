@@ -48,6 +48,18 @@ public class RedisConfig implements CachingConfigurer {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
+    @Value("${spring.data.redis.username}")
+    private String redisUsername;
+
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
+
+    @Value("${cache.redis.key-prefix}")
+    private String keyPrefix;
+
+    @Value("${cache.redis.time-to-live}")
+    private long defaultTtlMs;
+
     @Bean
     public ClientResources lettuceClientResources(ObservationRegistry observationRegistry) {
         MicrometerTracing micrometerTracing = new MicrometerTracing(observationRegistry, "redis", true);
@@ -64,12 +76,19 @@ public class RedisConfig implements CachingConfigurer {
 
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
             .clientResources(lettuceClientResources)
-            .commandTimeout(Duration.ofSeconds(5)) // fail fast on command timeout
+            .commandTimeout(Duration.ofMillis(defaultTtlMs))
             .shutdownTimeout(Duration.ZERO) // optional: no wait on shutdown
             .clientOptions(clientOptions)
             .build();
 
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
+        if (redisUsername != null && !redisUsername.isEmpty()) {
+            redisConfig.setUsername(redisUsername);
+        }
+        if (redisPassword != null && !redisPassword.isEmpty()) {
+            redisConfig.setPassword(redisPassword);
+        }
+
         return new LettuceConnectionFactory(redisConfig, clientConfig);
     }
 
@@ -119,16 +138,14 @@ public class RedisConfig implements CachingConfigurer {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10)) // Thời gian sống mặc định của cache là 10 phút
                 .disableCachingNullValues() // Không lưu cache cho các giá trị null
+                .prefixCacheNameWith(keyPrefix)
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(Object.class)));
 
         // Tạo CacheManager với các cấu hình cụ thể cho từng loại cache
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
-                // Cache "data" có thời gian sống 5 phút
-                .withCacheConfiguration("data", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(5)))
-                // Cache "users" có thời gian sống 1 giờ
-                .withCacheConfiguration("users", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)))
+                .enableStatistics()
                 .build();
     }
 

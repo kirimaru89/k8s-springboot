@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.vietinbank.paymenthub.config;
 
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;

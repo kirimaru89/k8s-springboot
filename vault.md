@@ -27,7 +27,7 @@ This guide walks you through integrating HashiCorp Vault into a **Spring Boot** 
 helm repo add hashicorp https://helm.releases.hashicorp.com
 helm repo update
 
-helm install vault hashicorp/vault \
+helm install my-vault hashicorp/vault \
   --set "injector.enabled=true" \
   --set "server.dev.enabled=true"
 ```

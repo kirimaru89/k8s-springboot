@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  aop:
+    auto: true
+    proxy-target-class: true
+
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.web: INFO
+    org.zalando.logbook: TRACE
+    org.springframework.vault: DEBUG
+    # enable this to see otel logs in console
+    # io.opentelemetry.exporter.otlp: DEBUG
+    # io.opentelemetry.sdk.trace.export: DEBUG
+    # io.opentelemetry: DEBUG
+
+  file:
+    path: logs/
+
+logbook:
+  format.style: json
+  include: /**  # This ensures all paths are logged
+  exclude: /actuator/**  # Optional exclusions
+  obfuscate:
+    headers:
+      - Authorization
+      - X-API-Key
+    parameters:
+      - password
+      - secret
+      - creditCard
+      - cardNumber
+  write:
+    chunk-size: 1000

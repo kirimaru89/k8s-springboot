@@ -182,7 +182,7 @@ vault kv put secret/spring-app-1/kubernetes \
   spring.datasource.url="jdbc:mysql://mysql:3306/book_db" \
   spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
   spring.datasource.username="user" \
-  spring.datasource.password="passwordtest"
+  spring.datasource.password="password"
 
 vault kv get secret/spring-app-1/kubernetes
 

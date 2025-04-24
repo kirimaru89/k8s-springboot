@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import com.vietinbank.paymenthub.models.Book;
@@ -29,17 +31,31 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.vietinbank.paymenthub.common.ResponseCode;
 import com.vietinbank.paymenthub.dto.response.PaginationResponseDto;
 
 @Service
 public class BookService {
-    UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
+    @Autowired
     private BookMapper bookMapper;
 
+    @Autowired
     private BookRepository bookRepository;
+
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        }
+        return null;
+    }
 
     public ResponseEntity<ApiResponseDto<Map<String, Object>>> list(PageableDto pageable, BookFilterDto filterDTO) {
         Specification<Book> specification = buildSpecification(filterDTO);
@@ -82,7 +98,7 @@ public class BookService {
     }
 
     public ResponseEntity<ApiResponseDto<BookResponseDto>> create(BookCreationDto bookRequest) {
-        User user = userService.getCurrentUser();
+        User user = userRepository.findById(getCurrentUserId()).orElseThrow();
 
         Book book = bookMapper.toBook(bookRequest);
         book.setUser(user);
@@ -92,10 +108,9 @@ public class BookService {
         return ApiResponseDto.success(ResponseCode.CREATED, bookMapper.toBookResponse(book));
     }
 
+    @Cacheable(value = "books", key = "#id")
     public ResponseEntity<ApiResponseDto<BookResponseDto>> get(Long id) {
-        User user = userService.getCurrentUser();
-
-        Book book = bookRepository.findByIdAndUser(id, user).orElse(null);
+        Book book = bookRepository.findById(id).orElse(null);
 
         if (book == null) {
             return ApiResponseDto.error(ResponseCode.NOT_FOUND, String.format("Book with id %s not found", id));
@@ -103,10 +118,10 @@ public class BookService {
         return ApiResponseDto.success(bookMapper.toBookResponse(book));
     }
 
+    @CachePut(value = "books", key = "#id")
     public ResponseEntity<ApiResponseDto<BookResponseDto>> update(BookCreationDto bookRequest, Long id) {
-        User user = userService.getCurrentUser();
-
-        if (!bookRepository.existsByIdAndUser(id, user)) {
+        User user = userRepository.findById(getCurrentUserId()).orElseThrow();
+        if (!bookRepository.existsById(id)) {
             return ApiResponseDto.error(ResponseCode.NOT_FOUND, String.format("Book with id %s not found", id));
         }
 
@@ -122,15 +137,18 @@ public class BookService {
         return ApiResponseDto.success(bookMapper.toBookResponse(book));
     }
 
+    @CacheEvict(value = "books", key = "#id")
     public ResponseEntity<ApiResponseDto<Void>>  delete(Long id) {
-        User user = userService.getCurrentUser();
-
-        if (!bookRepository.existsByIdAndUser(id, user)) {
+        if (!bookRepository.existsById(id)) {
             return ApiResponseDto.error(ResponseCode.NOT_FOUND, String.format("Book with id %s not found", id));
         }
 
         bookRepository.deleteById(id);
 
         return ApiResponseDto.success(ResponseCode.NO_CONTENT, null);
+    }
+
+    private long getCurrentUserId() {
+        return 2;
     }
 }

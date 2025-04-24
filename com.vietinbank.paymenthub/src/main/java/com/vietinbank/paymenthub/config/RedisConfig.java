@@ -30,6 +30,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,11 +95,26 @@ public class RedisConfig implements CachingConfigurer {
         if (redisUsername != null && !redisUsername.isEmpty()) {
             redisConfig.setUsername(redisUsername);
         }
+
         if (redisPassword != null && !redisPassword.isEmpty()) {
             redisConfig.setPassword(redisPassword);
         }
 
         return new LettuceConnectionFactory(redisConfig, clientConfig);
+        // Configure Redis cluster connection
+        // List<String> clusterNodes = Arrays.asList(
+        //     "redis-node1:6379",
+        //     "redis-node2:6379",
+        //     "redis-node3:6379"
+        // );
+
+        // RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(clusterNodes);
+        
+        // if (redisPassword != null && !redisPassword.isEmpty()) {
+        //     clusterConfig.setPassword(redisPassword);
+        // }
+
+        // return new LettuceConnectionFactory(clusterConfig, clientConfig);
     }
 
     /**

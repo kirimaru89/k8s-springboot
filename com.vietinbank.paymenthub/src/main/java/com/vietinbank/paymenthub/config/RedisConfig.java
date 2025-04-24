@@ -134,7 +134,9 @@ public class RedisConfig implements CachingConfigurer {
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
-                .enableStatistics() // Enable statistics for monitoring
+                .enableStatistics()
+                .withCacheConfiguration("books", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(5)))
+                .withCacheConfiguration("users", RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)))
                 .build();
     }
 

@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/circuitbreakers/**").permitAll()
-                        .requestMatchers("/api/kafka/**").permitAll()
+                        .requestMatchers("/api/kafka-producer/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

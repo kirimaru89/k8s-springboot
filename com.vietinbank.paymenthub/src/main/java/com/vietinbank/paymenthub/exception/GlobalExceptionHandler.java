@@ -1,49 +1,64 @@
-// import org.springframework.web.bind.annotation.ControllerAdvice;
-// import io.opentelemetry.api.trace.Span;
-// import io.opentelemetry.api.trace.StatusCode;
-// import com.vietinbank.paymenthub.dto.ApiResponse;
-// import com.vietinbank.paymenthub.enums.ResponseCode;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.http.HttpStatus;
-// import org.springframework.web.bind.annotation.ExceptionHandler;
+package com.vietinbank.paymenthub.exception;
 
+import java.net.SocketTimeoutException;
+import java.util.stream.Collectors;
 
-// @ControllerAdvice
-// public class GlobalExceptionHandler {
+import com.vietinbank.paymenthub.dto.response.ApiResponseDto;
+import com.vietinbank.paymenthub.common.ResponseCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.ResourceAccessException;
 
-//     @ExceptionHandler(RuntimeException.class)
-//     public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
-//         Span span = Span.current();
-//         span.recordException(ex);
-//         span.setStatus(StatusCode.ERROR, "Unhandled runtime exception");
+@RestControllerAdvice
+public class GlobalExceptionHandler {
 
-//         ApiResponse<String> response = ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR, ex.getMessage());
-//         return ResponseEntity
-//             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-//             .body(response);
-//     }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception) {
+        // get errors from BindingResult
+        String msg = exception.getBindingResult().getFieldErrors().stream().map(error -> error.getDefaultMessage()).collect(Collectors.joining(", "));
 
-// //     @ExceptionHandler(CallNotPermittedException.class)
-// //     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-// //     public ResponseEntity<ApiResponse<String>> handleCircuitBreakerException(CallNotPermittedException ex) {
-// //         return ResponseEntity
-// //             .status(HttpStatus.SERVICE_UNAVAILABLE)
-// //             .body(ApiResponse.error(ResponseCode.CIRCUIT_BREAKER_OPEN, "Service is temporarily unavailable"));
-// //     }
+        return ApiResponseDto.error(ResponseCode.BAD_REQUEST, msg);
+    }
 
-// //     @ExceptionHandler(BulkheadFullException.class)
-// //     @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-// //     public ResponseEntity<ApiResponse<String>> handleBulkheadException(BulkheadFullException ex) {
-// //         return ResponseEntity
-// //             .status(HttpStatus.TOO_MANY_REQUESTS)
-// //             .body(ApiResponse.error(ResponseCode.BULKHEAD_FULL, "Too many concurrent requests"));
-// //     }
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return ApiResponseDto.error(ResponseCode.METHOD_NOT_ALLOWED);
+    }
 
-// //     @ExceptionHandler(RequestNotPermitted.class)
-// //     @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-// //     public ResponseEntity<ApiResponse<String>> handleRateLimitException(RequestNotPermitted ex) {
-// //         return ResponseEntity
-// //             .status(HttpStatus.TOO_MANY_REQUESTS)
-// //             .body(ApiResponse.error(ResponseCode.RATE_LIMIT_EXCEEDED, "Rate limit exceeded"));
-// //     }
-// } 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleAccessDeniedException(AccessDeniedException exception) {
+        return ApiResponseDto.error(ResponseCode.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleAccessDeniedException(AuthenticationException exception) {
+        return ApiResponseDto.error(ResponseCode.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SocketTimeoutException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleSocketTimeoutException(SocketTimeoutException exception) {
+        return ApiResponseDto.error(ResponseCode.GATEWAY_TIMEOUT);
+    }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleResourceAccessException(ResourceAccessException exception) {
+        return ApiResponseDto.error(ResponseCode.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleRuntimeException(RuntimeException exception) {
+        return ApiResponseDto.error(ResponseCode.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleException(Exception exception) {
+        return ApiResponseDto.error(ResponseCode.INTERNAL_SERVER_ERROR);
+    }
+
+}

@@ -28,7 +28,6 @@ public class LoggingAspect {
             // Thêm controller và method name vào MDC
             MDC.put("className", className);
             MDC.put("function", methodName);
-            // System.out.println("logAroundController add to MDC: " + MDC.get("className") + " " + MDC.get("function"));
 
             // Log request
             Object[] args = joinPoint.getArgs();
@@ -57,7 +56,6 @@ public class LoggingAspect {
             // Thêm service và method name vào MDC
             MDC.put("className", className);
             MDC.put("function", methodName);
-            // System.out.println("logAroundService add to MDC: " + MDC.get("className") + " " + MDC.get("function"));
 
             // Log request
             Object[] args = joinPoint.getArgs();
@@ -73,7 +71,6 @@ public class LoggingAspect {
         } finally {
             // MDC.remove("className");
             // MDC.remove("function");
-            // System.out.println("logAroundService MDC cleared: " + MDC.get("className") + " " + MDC.get("function"));
         }
     }
 }

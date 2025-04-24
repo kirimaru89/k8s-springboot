@@ -16,25 +16,12 @@ spec:
         prometheus.io/port: "8080"    # Specify the metrics port
         prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (change if needed)
     spec:
-      serviceAccountName: spring-app-1-sa # must match the service account name in the application-rbac.yaml file
       containers:
       - name: com-vietinbank-paymenthub
         image: com-vietinbank-paymenthub:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
-        volumeMounts:
-        - name: config-volume
-          mountPath: app/config/logging
-        - name: resilience-volume
-          mountPath: app/config/resilience
-      volumes:
-      - name: config-volume
-        configMap:
-          name: logbook-config
-      - name: resilience-volume
-        configMap:
-          name: resilience-config
 ---
 apiVersion: v1
 kind: Service

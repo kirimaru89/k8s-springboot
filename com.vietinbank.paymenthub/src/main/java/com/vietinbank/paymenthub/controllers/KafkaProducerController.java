@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vietinbank.paymenthub.services.KafkaProducerService;
 import com.vietinbank.paymenthub.services.LoggingService;
 @RestController
-@RequestMapping("/api/kafka")
-public class KafkaController {
+@RequestMapping("/api/kafka-producer")
+public class KafkaProducerController {
     @Autowired
     private LoggingService loggingService;
     

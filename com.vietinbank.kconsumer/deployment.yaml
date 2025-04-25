@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: com-vietinbank-kconsumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: com-vietinbank-kconsumer
+  template:
+    metadata:
+      labels:
+        app: com-vietinbank-kconsumer
+      # Add annotations for Prometheus scraping
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+      - name: com-vietinbank-kconsumer
+        image: com-vietinbank-kconsumer:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: com-vietinbank-kconsumer-service
+spec:
+  selector:
+    app: com-vietinbank-kconsumer
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    # nodePort: 30080 # Uncomment and set if you want a specific NodePort
+  type: NodePort  # Changed from LoadBalancer to NodePort for local development

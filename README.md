@@ -66,10 +66,17 @@ kubectl delete clusterrolebinding filebeat
 
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \
-  -t com-vietinbank-paymenthub:latest \
-  ./com.vietinbank.paymenthub
-kind load docker-image com-vietinbank-paymenthub:latest --name spring-boot-cluster
-kubectl rollout restart deployment com-vietinbank-paymenthub
+  -t com-vietinbank-kproducer:latest \
+  ./com.vietinbank.kproducer
+kind load docker-image com-vietinbank-kproducer:latest --name spring-boot-cluster
+kubectl rollout restart deployment com-vietinbank-kproducer
+
+DOCKER_BUILDKIT=1 docker buildx build \
+  --platform linux/arm64 \
+  -t com-vietinbank-kconsumer:latest \
+  ./com.vietinbank.kconsumer
+kind load docker-image com-vietinbank-kconsumer:latest --name spring-boot-cluster
+kubectl rollout restart deployment com-vietinbank-kconsumer
 
 DOCKER_BUILDKIT=1 docker buildx build \
   --platform linux/arm64 \
@@ -99,7 +106,8 @@ DOCKER_BUILDKIT=1 docker buildx build \
 kind load docker-image spring-app-4:latest --name spring-boot-cluster
 kubectl rollout restart deployment spring-app-4
 
-kubectl apply -f com.vietinbank.paymenthub/deployment.yaml
+kubectl apply -f com.vietinbank.kproducer/deployment.yaml
+kubectl apply -f com.vietinbank.kconsumer/deployment.yaml
 kubectl apply -f spring-app-1/deployment.yaml
 kubectl apply -f spring-app-2/deployment.yaml
 kubectl apply -f spring-app-3/deployment.yaml

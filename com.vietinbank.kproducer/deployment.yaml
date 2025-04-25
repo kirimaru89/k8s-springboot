@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: com-vietinbank-paymenthub
+  name: com-vietinbank-kproducer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: com-vietinbank-paymenthub
+      app: com-vietinbank-kproducer
   template:
     metadata:
       labels:
-        app: com-vietinbank-paymenthub
+        app: com-vietinbank-kproducer
       annotations:
         prometheus.io/scrape: "true"  # Enable Prometheus scraping
         prometheus.io/port: "8080"    # Specify the metrics port
         prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (change if needed)
     spec:
       containers:
-      - name: com-vietinbank-paymenthub
-        image: com-vietinbank-paymenthub:latest
+      - name: com-vietinbank-kproducer
+        image: com-vietinbank-kproducer:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -26,14 +26,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: com-vietinbank-paymenthub-service
+  name: com-vietinbank-kproducer-service
   # annotations:
   #   prometheus.io/scrape: "true"  # Enable scraping for Prometheus via service discovery
   #   prometheus.io/port: "8080"    # Specify the metrics port
   #   prometheus.io/path: "/actuator/prometheus"  # Metrics endpoint (modify if needed)
 spec:
   selector:
-    app: com-vietinbank-paymenthub
+    app: com-vietinbank-kproducer
   ports:
   - protocol: TCP
     port: 8080

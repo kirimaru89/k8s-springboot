@@ -22,19 +22,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.EndpointHandlerMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.util.backoff.FixedBackOff;
 
 
 @Configuration
 public class KafkaConfig {
+    private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
     @Value("${kafka.listener.missing-topics-fatal:false}")
     private boolean missingTopicsFatal;
     
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-            ConsumerFactory<String, String> consumerFactory) {
+            ConsumerFactory<String, String> consumerFactory, DefaultErrorHandler defaultErrorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = 
             new ConcurrentKafkaListenerContainerFactory<>();
             
@@ -53,20 +56,39 @@ public class KafkaConfig {
         // 🔥 CRITICAL: Needed for Acknowledgment argument to work
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
+        factory.setCommonErrorHandler(defaultErrorHandler);
+
         return factory;
     }
 
+    // @Bean
+    // public RetryTopicConfiguration retryTopicConfiguration(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
+    //     return RetryTopicConfigurationBuilder
+    //             .newInstance()
+    //             .maxAttempts(5)
+    //             .fixedBackOff(5000)
+    //             .retryTopicSuffix("-retry")
+    //             .dltSuffix("-dlt")
+    //             // happen after message is sent to DLT
+    //             .dltHandlerMethod(new EndpointHandlerMethod("myCustomDltProcessor", "processDltMessage"))
+    //             .create(nonTransactionalKafkaTemplate);
+    // }
+
     @Bean
-    public RetryTopicConfiguration retryTopicConfiguration(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
-        return RetryTopicConfigurationBuilder
-                .newInstance()
-                .maxAttempts(5)
-                .fixedBackOff(5000)
-                .retryTopicSuffix("-retry")
-                .dltSuffix("-dlt")
-                // happen after message is sent to DLT
-                .dltHandlerMethod(new EndpointHandlerMethod("myCustomDltProcessor", "processDltMessage"))
-                .create(nonTransactionalKafkaTemplate);
+    public DefaultErrorHandler defaultErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
+        FixedBackOff backOff = new FixedBackOff(5000L, 3);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate) {};
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        errorHandler.addRetryableExceptions(IllegalArgumentException.class);
+
+        errorHandler.setRetryListeners((record, ex, attempt) ->
+            log.warn("🔁 Retry attempt {} failed for record: {}, error: {}", attempt, record.value(), ex.getMessage())
+        );
+
+        return errorHandler;
     }
 
     @Bean
@@ -75,28 +97,5 @@ public class KafkaConfig {
         // Enable observations for the template to preserve trace context
         template.setObservationEnabled(true);
         return template;
-    }
-
-    @Bean
-    public KafkaTemplate<String, String> transactionalKafkaTemplate(
-        ProducerFactory<String, String> producerFactory) {
-        KafkaTemplate<String, String> template = new KafkaTemplate<>(producerFactory);
-        template.setObservationEnabled(true);
-        return template;
-    }
-
-    @Bean
-    @Qualifier("nonTransactionalKafkaTemplate")
-    public KafkaTemplate<String, String> nonTransactionalKafkaTemplate(
-            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        // Still use idempotence but NOT transactions
-        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        props.put(ProducerConfig.ACKS_CONFIG, "all");
-        
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props));
     }
 }

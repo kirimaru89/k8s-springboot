@@ -48,7 +48,7 @@ public class KafkaConsumerService {
         String transactionId = record.key() != null ? record.key() : "<null>";
 
         try {
-            log.info("Processing message [txId={}] from topic {}, partition {}, offset {}: {}",
+            log.info("-----Processing message [txId={}] from topic {}, partition {}, offset {}: {}",
                     transactionId, record.topic(), record.partition(), record.offset(), record.value());
 
             processTransactionIdempotently(transactionId, record.value(), record.topic(), record.partition(), record.offset(), acknowledgment);

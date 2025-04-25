@@ -36,6 +36,7 @@ public class KafkaProducerService {
                         TOPIC, result.getRecordMetadata().offset());
                 } else {
                     log.error("Failed to send message to Kafka", ex);
+                    throw new RuntimeException("Failed to send message to Kafka", ex);
                 }
             });
     }

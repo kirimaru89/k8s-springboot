@@ -9,16 +9,22 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
+
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.ScopedSpan;
+
 import com.example.demo.models.Artist;
 import com.example.demo.repositories.ArtistRepository;
+
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Service
 public class KafkaConsumerService {
@@ -33,39 +39,61 @@ public class KafkaConsumerService {
 
     @Autowired
     private Tracer tracer;
-    
+
     @KafkaListener(
-        topics = TOPIC, 
+        topics = TOPIC,
         groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void listen(
-            @Header(KafkaHeaders.RECEIVED_KEY) String transactionId,  // ✅ from Kafka key
-            @Payload String message,
-            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-            @Header(KafkaHeaders.OFFSET) long offset,
-            Acknowledgment acknowledgment
-    ) {
-        try {
-            log.info("Processing message [txId={}] from topic {}, partition {}, offset {}: {}", 
-                    transactionId, topic, partition, offset, message);
+    public void listen(ConsumerRecord<String, String> record, Acknowledgment acknowledgment) {
+        String transactionId = record.key() != null ? record.key() : "<null>";
 
-            // ✅ Now use the correct transactionId from producer
-            processTransactionIdempotently(transactionId, message, topic, partition, offset, acknowledgment);
+        try {
+            log.info("Processing message [txId={}] from topic {}, partition {}, offset {}: {}",
+                    transactionId, record.topic(), record.partition(), record.offset(), record.value());
+
+            processTransactionIdempotently(transactionId, record.value(), record.topic(), record.partition(), record.offset(), acknowledgment);
 
             acknowledgment.acknowledge();
-            log.info("Successfully processed message [txId={}]", transactionId);
+            log.info("✅ Successfully processed message [txId={}]", transactionId);
 
         } catch (Exception e) {
-            log.error("Error processing message [txId={}]: {}", transactionId, e.getMessage(), e);
-
-            // Don't acknowledge - the message will be retried by the container's error handler
-            // The error handler will eventually send to DLT after retries are exhausted
-            
-            // Re-throw exception to let the error handler deal with it
+            log.error("❌ Error processing message [txId={}, message={}]: {}", transactionId, record.value(), e.getMessage(), e);
             throw e;
         }
     }
+    
+    // @KafkaListener(
+    //     topics = TOPIC, 
+    //     groupId = "${spring.kafka.consumer.group-id}"
+    // )
+    // public void listen(
+    //         @Header(KafkaHeaders.RECEIVED_KEY) String transactionId,  // ✅ from Kafka key
+    //         @Payload String message,
+    //         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+    //         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+    //         @Header(KafkaHeaders.OFFSET) long offset,
+    //         Acknowledgment acknowledgment
+    // ) {
+    //     try {
+    //         log.info("Processing message [txId={}] from topic {}, partition {}, offset {}: {}", 
+    //                 transactionId, topic, partition, offset, message);
+
+    //         // ✅ Now use the correct transactionId from producer
+    //         processTransactionIdempotently(transactionId, message, topic, partition, offset, acknowledgment);
+
+    //         acknowledgment.acknowledge();
+    //         log.info("Successfully processed message [txId={}]", transactionId);
+
+    //     } catch (Exception e) {
+    //         log.error("Error processing message [txId={}]: {}", transactionId, e.getMessage(), e);
+
+    //         // Don't acknowledge - the message will be retried by the container's error handler
+    //         // The error handler will eventually send to DLT after retries are exhausted
+            
+    //         // Re-throw exception to let the error handler deal with it
+    //         throw e;
+    //     }
+    // }
 
     private void processTransactionIdempotently(String transactionId, String message, String topic, int partition, long offset, Acknowledgment acknowledgment) {
         if (isMessageProcessed(transactionId)) {

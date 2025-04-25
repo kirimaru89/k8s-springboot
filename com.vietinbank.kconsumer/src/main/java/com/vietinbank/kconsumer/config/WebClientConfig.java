@@ -1,4 +1,4 @@
-package com.vietinbank.kconsumer.config;
+package com.vietinbank.kproducer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

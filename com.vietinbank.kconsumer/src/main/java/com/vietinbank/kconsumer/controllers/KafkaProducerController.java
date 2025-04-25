@@ -1,6 +1,6 @@
-package com.vietinbank.kconsumer.controllers;
+package com.vietinbank.kproducer.controllers;
 
-import com.vietinbank.kconsumer.services.LoggingService;
+import com.vietinbank.kproducer.services.LoggingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vietinbank.kconsumer.services.KafkaProducerService;
-import com.vietinbank.kconsumer.services.LoggingService;
+import com.vietinbank.kproducer.services.KafkaProducerService;
+import com.vietinbank.kproducer.services.LoggingService;
 @RestController
-@RequestMapping("/api/kafka")
-public class KafkaController {
+@RequestMapping("/api/kafka-producer")
+public class KafkaProducerController {
     @Autowired
     private LoggingService loggingService;
     

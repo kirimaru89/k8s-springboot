@@ -1,4 +1,4 @@
-package com.vietinbank.kconsumer.utils;
+package com.vietinbank.kproducer.utils;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

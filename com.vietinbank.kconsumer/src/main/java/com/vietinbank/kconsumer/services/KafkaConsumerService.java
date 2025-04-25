@@ -1,4 +1,4 @@
-package com.vietinbank.kconsumer.services;
+package com.example.demo.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,6 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.ScopedSpan;
 
@@ -18,8 +17,6 @@ import com.vietinbank.kconsumer.models.Artist;
 import com.vietinbank.kconsumer.repositories.ArtistRepository;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,9 +25,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 @Service
 public class KafkaConsumerService {
-    @Autowired
-    private CircuitBreakerRegistry circuitBreakerRegistry;
-
     @Autowired
     private ArtistRepository artistRepository;
 

@@ -1,4 +1,4 @@
-package com.vietinbank.kconsumer.config;
+package com.vietinbank.kproducer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.vietinbank.kconsumer.security.JwtFilter;
+import com.vietinbank.kproducer.security.JwtFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -37,12 +37,12 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/api/books/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/circuitbreakers/**").permitAll()
-                        .requestMatchers("/api/kafka/**").permitAll()
-                        .requestMatchers("/api/hello/**").permitAll()
+                        .requestMatchers("/api/kafka-producer/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

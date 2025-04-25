@@ -17,6 +17,11 @@ logging:
     com.example.demo: DEBUG
     org.springframework.web: INFO
     org.zalando.logbook: TRACE
+    org.springframework.vault: DEBUG
+    # enable this to see otel logs in console
+    # io.opentelemetry.exporter.otlp: DEBUG
+    # io.opentelemetry.sdk.trace.export: DEBUG
+    # io.opentelemetry: DEBUG
 
   file:
     path: logs/

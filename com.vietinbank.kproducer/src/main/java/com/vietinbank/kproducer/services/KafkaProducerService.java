@@ -21,7 +21,7 @@ import io.opentelemetry.api.trace.SpanContext;
 public class KafkaProducerService {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaProducerService.class);
-    private static final String TOPIC = "app-communication";
+    private static final String TOPIC = "kTopic";
     
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;

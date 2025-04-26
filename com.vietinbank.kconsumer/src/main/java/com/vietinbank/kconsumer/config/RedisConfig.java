@@ -1,4 +1,4 @@
-package com.vietinbank.paymenthub.config;
+package com.vietinbank.kproducer.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

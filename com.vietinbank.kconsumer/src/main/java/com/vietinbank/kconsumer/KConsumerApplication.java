@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer;
+package com.vietinbank.kconsumer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

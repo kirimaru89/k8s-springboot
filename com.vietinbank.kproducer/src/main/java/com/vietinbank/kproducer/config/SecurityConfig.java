@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/circuitbreakers/**").permitAll()
                         .requestMatchers("/api/kafka-producer/**").permitAll()
+                        .requestMatchers("/api/rabbitmq-producer/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

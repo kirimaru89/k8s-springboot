@@ -57,6 +57,9 @@ kubectl rollout restart deployment logstash
 kubectl apply -f elk/filebeat.yaml
 kubectl rollout restart daemonset filebeat
 
+# rabbitmq
+helm install my-rabbitmq bitnami/rabbitmq --version 16.0.0
+
 kubectl delete daemonset filebeat
 kubectl delete configmap filebeat-config
 kubectl delete serviceaccount filebeat

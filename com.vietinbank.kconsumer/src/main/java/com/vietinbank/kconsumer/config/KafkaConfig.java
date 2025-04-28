@@ -31,15 +31,7 @@ public class KafkaConfig {
         
         // This enables trace context extraction from Kafka headers
         factory.getContainerProperties().setObservationEnabled(true);
-        
-        // CRITICAL: Make missing topics non-fatal to allow application to start
-        factory.setMissingTopicsFatal(missingTopicsFatal);
-        
-        // IMPORTANT: Set autoStartup to true to ensure listeners start automatically
-        factory.setAutoStartup(true);
 
-        // factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-        
         log.info("Kafka listener container factory configured with missingTopicsFatal={}", missingTopicsFatal);
 
         return factory;

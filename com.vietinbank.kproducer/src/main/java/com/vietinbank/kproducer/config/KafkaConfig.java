@@ -14,30 +14,6 @@ import org.springframework.kafka.core.ProducerFactory;
 public class KafkaConfig {
     private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${kafka.listener.missing-topics-fatal:false}")
-    private boolean missingTopicsFatal;
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-            ConsumerFactory<String, String> consumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = 
-            new ConcurrentKafkaListenerContainerFactory<>();
-            
-        factory.setConsumerFactory(consumerFactory);
-        
-        // This enables trace context extraction from Kafka headers
-        factory.getContainerProperties().setObservationEnabled(true);
-        
-        // CRITICAL: Make missing topics non-fatal to allow application to start
-        factory.setMissingTopicsFatal(missingTopicsFatal);
-        
-        // Set autoStartup to false - we'll start listeners programmatically
-        // by KafkaListenerStarter.java
-        factory.setAutoStartup(false);
-
-        return factory;
-    }
-
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
         KafkaTemplate<String, String> template = new KafkaTemplate<>(producerFactory);

@@ -10,6 +10,9 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
 public class KafkaConfig {
@@ -35,11 +38,28 @@ public class KafkaConfig {
         // IMPORTANT: Set autoStartup to true to ensure listeners start automatically
         factory.setAutoStartup(true);
 
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        // factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         
         log.info("Kafka listener container factory configured with missingTopicsFatal={}", missingTopicsFatal);
 
         return factory;
+    }
+
+    @Bean
+    public DefaultErrorHandler defaultErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
+        FixedBackOff backOff = new FixedBackOff(5000L, 3);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate) {};
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        errorHandler.addRetryableExceptions(IllegalArgumentException.class);
+
+        errorHandler.setRetryListeners((record, ex, attempt) ->
+            log.warn("🔁 Retry attempt {} failed for record: {}, error: {}", attempt, record.value(), ex.getMessage())
+        );
+
+        return errorHandler;
     }
 
     @Bean

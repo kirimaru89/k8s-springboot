@@ -32,7 +32,10 @@ public class KafkaRequestReplyConfig {
             ProducerFactory<String, String> pf,
             ConcurrentMessageListenerContainer<String, String> repliesContainer) {
         
-        return new ReplyingKafkaTemplate<>(pf, repliesContainer);
+        ReplyingKafkaTemplate<String, String, String> template = new ReplyingKafkaTemplate<>(pf, repliesContainer);
+        template.setObservationEnabled(true);
+        
+        return template;
     }
 
     @Bean

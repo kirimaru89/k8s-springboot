@@ -61,35 +61,35 @@ public class KafkaConfig {
         return factory;
     }
 
-    // @Bean
-    // public RetryTopicConfiguration retryTopicConfiguration(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
-    //     return RetryTopicConfigurationBuilder
-    //             .newInstance()
-    //             .maxAttempts(5)
-    //             .fixedBackOff(5000)
-    //             .retryTopicSuffix("-retry")
-    //             .dltSuffix("-dlt")
-    //             // happen after message is sent to DLT
-    //             .dltHandlerMethod(new EndpointHandlerMethod("myCustomDltProcessor", "processDltMessage"))
-    //             .create(nonTransactionalKafkaTemplate);
-    // }
-
     @Bean
-    public DefaultErrorHandler defaultErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
-        FixedBackOff backOff = new FixedBackOff(5000L, 3);
-
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate) {};
-
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
-
-        errorHandler.addRetryableExceptions(IllegalArgumentException.class);
-
-        errorHandler.setRetryListeners((record, ex, attempt) ->
-            log.warn("🔁 Retry attempt {} failed for record: {}, error: {}", attempt, record.value(), ex.getMessage())
-        );
-
-        return errorHandler;
+    public RetryTopicConfiguration retryTopicConfiguration(KafkaTemplate<String, String> nonTransactionalKafkaTemplate) {
+        return RetryTopicConfigurationBuilder
+                .newInstance()
+                .maxAttempts(5)
+                .fixedBackOff(5000)
+                .retryTopicSuffix("-retry")
+                .dltSuffix("-dlt")
+                // happen after message is sent to DLT
+                .dltHandlerMethod(new EndpointHandlerMethod("myCustomDltProcessor", "processDltMessage"))
+                .create(nonTransactionalKafkaTemplate);
     }
+
+    // @Bean
+    // public DefaultErrorHandler defaultErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
+    //     FixedBackOff backOff = new FixedBackOff(5000L, 3);
+
+    //     DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate) {};
+
+    //     DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+    //     errorHandler.addRetryableExceptions(IllegalArgumentException.class);
+
+    //     errorHandler.setRetryListeners((record, ex, attempt) ->
+    //         log.warn("🔁 Retry attempt {} failed for record: {}, error: {}", attempt, record.value(), ex.getMessage())
+    //     );
+
+    //     return errorHandler;
+    // }
 
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {

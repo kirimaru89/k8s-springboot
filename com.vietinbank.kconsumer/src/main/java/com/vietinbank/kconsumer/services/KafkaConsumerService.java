@@ -17,7 +17,7 @@ public class KafkaConsumerService {
         groupId = "${spring.kafka.consumer.group-id}"
     )
     public void listen(ConsumerRecord<String, String> record, Acknowledgment acknowledgment) {
-        String key = record.key() != null ? record.key() : "<null>";
+        String transactionId = record.key() != null ? record.key() : "<null>";
         
         try {
             log.info("Received message from topic {}, partition {}, offset {}: {}",
@@ -25,15 +25,30 @@ public class KafkaConsumerService {
             
             // Process the message here
             // For now, just log it
+            processTransactionIdempotently(transactionId, record.value());
             
             // Acknowledge the message
             acknowledgment.acknowledge();
-            log.info("Successfully processed message with key {}", key);
+            log.info("Successfully processed message with key {}", transactionId);
             
         } catch (Exception e) {
-            log.error("Error processing message with key {}: {}", key, e.getMessage(), e);
+            log.error("Error processing message with key {}: {}", transactionId, e.getMessage(), e);
             // Don't acknowledge - the message will be retried by the container's error handler
             throw e;
         }
+    }
+
+    private void processTransactionIdempotently(String transactionId, String message) {
+        if (isMessageProcessed(transactionId)) {
+            log.info("Message [txId={}] already processed, skipping", transactionId);
+            return;
+        }
+
+        log.info("Processing message: {}", message);
+    }
+
+    private boolean isMessageProcessed(String transactionId) {
+        // TODO: Implement this
+        return false;
     }
 }

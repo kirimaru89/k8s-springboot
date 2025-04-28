@@ -132,6 +132,8 @@ kubectl apply -f configmaps/configuration-watcher-rbac.yaml
 kubectl apply -f configmaps/configuration-watcher.yaml
 # logbook-config
 kubectl apply -f configmaps/logbook-config.yaml
+# db-credential
+kubectl apply -f configmaps/db-credentials.yaml
 
 
 # hashicorp vault

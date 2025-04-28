@@ -39,6 +39,15 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- https://stackoverflow.com/questions/42659920/is-there-a-compatibility-matrix-of-spring-boot-and-spring-cloud -->
+			<!-- spring cloud dependencies for @RefreshScope -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>2023.0.5</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
@@ -144,7 +153,7 @@
 			<groupId>org.zalando</groupId>
 			<artifactId>logbook-json</artifactId>
 			<version>3.7.1</version>
-		</dependency>		
+		</dependency>
 		<!-- Caching - Redis -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -159,6 +168,31 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<!-- Resilience4j -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Spring Cloud starter @RefreshScope -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter</artifactId>
+		</dependency>
+		<!-- For spring cloud kubernetest watcher -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-kubernetes-client-config</artifactId>
 		</dependency>
 	</dependencies>
 

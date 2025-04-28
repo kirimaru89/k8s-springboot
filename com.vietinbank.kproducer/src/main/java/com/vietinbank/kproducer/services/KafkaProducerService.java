@@ -27,9 +27,10 @@ public class KafkaProducerService {
     private KafkaTemplate<String, String> kafkaTemplate;
     
     public void sendMessage(String message) {
+        String transactionId = UUID.randomUUID().toString();
         log.info("Sending message to Kafka: {}", message);
         
-        kafkaTemplate.send(TOPIC, message)
+        kafkaTemplate.send(TOPIC, transactionId, message)
             .whenComplete((result, ex) -> {
                 if (ex == null) {
                     log.info("Message sent to topic {} with offset {}", 

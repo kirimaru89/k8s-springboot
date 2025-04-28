@@ -18,9 +18,6 @@ import org.springframework.util.backoff.FixedBackOff;
 public class KafkaConfig {
     private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${kafka.listener.missing-topics-fatal:false}")
-    private boolean missingTopicsFatal;
-
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
             ConsumerFactory<String, String> consumerFactory) {
@@ -31,8 +28,6 @@ public class KafkaConfig {
         
         // This enables trace context extraction from Kafka headers
         factory.getContainerProperties().setObservationEnabled(true);
-
-        log.info("Kafka listener container factory configured with missingTopicsFatal={}", missingTopicsFatal);
 
         return factory;
     }

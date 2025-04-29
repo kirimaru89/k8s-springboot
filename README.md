@@ -154,3 +154,13 @@ kubectl describe pod <pod-name>
 - [HashiCorp Vault Documentation](https://www.vaultproject.io/docs)
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
 - [Resilience4j Documentation](https://resilience4j.readme.io/docs)
+
+
+### 3. Thư mục `gRPC`
+Chứa thông tin demo gPRC. Cụ thể xem trong file gRPC\README.md và gRPC\architecture.md
+
+### 4. Thư mục `saga\orchestration`
+Chứa thông tin demo Saga pattern Orchestration. Cụ thể xem trong file saga\orchestration\README.md và saga\orchestration\architecture.md
+
+### 5. Thư mục `saga\choreography`
+Chứa thông tin demo Saga pattern Choreography. Cụ thể xem trong file saga\choreography\README.md và saga\choreography\architecture.md

@@ -1,0 +1,14 @@
+
+
+client:
+  transaction-service:
+    uri: http://localhost:8585/api/v1/digital-documents/library/transactions
+    rollback-uri: http://localhost:8585/api/v1/digital-documents/library/transactions/rollback
+    complete-uri: http://localhost:8585/api/v1/digital-documents/library/transactions/complete
+
+  account-service:
+    uri: http://localhost:8484/api/v1/digital-documents/library/accounts/update-balance
+    rollback-uri: http://localhost:8484/api/v1/digital-documents/library/accounts/update-balance/rollback
+    complete-uri: http://localhost:8484/api/v1/digital-documents/library/accounts/update-balance/complete
+  fraud-service:
+    uri: http://localhost:8686/api/v1/digital-documents/library/fraud-detection

@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgres
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  eureka:
+    image: openjdk:21-jdk-slim
+    container_name: eureka_server
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./eureka:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8762:8762"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    environment:
+      SERVER_PORT: 8762
+      SPRING_APPLICATION_NAME: eureka-server
+      EUREKA_INSTANCE_HOSTNAME: eureka
+    networks:
+      - app-network
+
+  fraud1:
+    image: openjdk:21-jdk-slim
+    container_name: fraud_service_1
+    working_dir: /app
+    volumes:
+      - ./fraud-detection-service:/app
+      - ~/.m2:/root/.m2
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    ports:
+      - "9696:9696"
+    depends_on:
+      - eureka
+    environment:
+      SPRING_APPLICATION_NAME: fraud-detection-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      GRPC_SERVER_PORT: 9696
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8762/eureka/
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - app-network
+
+  account1:
+    image: openjdk:21-jdk-slim
+    container_name: account_service_1
+    working_dir: /app
+    volumes:
+      - ./account-service:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "9595:9595"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - eureka
+    environment:
+      SPRING_APPLICATION_NAME: account-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      GRPC_SERVER_PORT: 9595
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8762/eureka/
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - app-network
+
+  transaction1:
+    image: openjdk:21-jdk-slim
+    container_name: transaction_service_1
+    working_dir: /app
+    volumes:
+      - ./transaction-service:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "9494:9494"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - eureka
+    environment:
+      SPRING_APPLICATION_NAME: transaction-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      GRPC_SERVER_PORT: 9494
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8762/eureka/
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  postgres_data:

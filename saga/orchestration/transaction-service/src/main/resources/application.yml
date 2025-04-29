@@ -1,0 +1,74 @@
+server:
+  port: 8585
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+  aop:
+    auto: true
+    proxy-target-class: true
+
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.web: INFO
+
+logbook:
+  format.style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-API-Key
+    parameters:
+      - password
+      - secret
+      - creditCard
+      - cardNumber
+  write:
+    chunk-size: 1000
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    persistAuthorization: true
+    tagsSorter: alpha
+    operationsSorter: alpha
+
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+api:
+  servers:
+    - url: http://192.168.0.1:8080
+      description: Development Server
+    - url: http://localhost:8080
+      description: Staging Server
+  info:
+    title: "My Open API"
+    version: "0.0.1"
+    description: >
+      springdoc-openapi java library helps to automate the generation of API documentation using spring boot projects.
+      springdoc-openapi works by examining an application at runtime to infer API semantics based on spring configurations,
+      class structure and various annotations. 
+
+

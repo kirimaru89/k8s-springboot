@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgres
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  fraud1:
+    image: openjdk:21-jdk-slim
+    container_name: fraud_service_1
+    working_dir: /app
+    volumes:
+      - ./fraud-detection-service:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8686:8686"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - postgres
+      - orchestrator
+    environment:
+      SERVER_PORT: 8686
+      SPRING_APPLICATION_NAME: fraud-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+    networks:
+      - app-network
+
+  account1:
+    image: openjdk:21-jdk-slim
+    container_name: account_service_1
+    working_dir: /app
+    volumes:
+      - ./account-service:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8484:8484"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - postgres
+      - orchestrator
+    environment:
+      SERVER_PORT: 8484
+      SPRING_APPLICATION_NAME: account-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+    networks:
+      - app-network
+
+  transaction1:
+    image: openjdk:21-jdk-slim
+    container_name: transaction_service_1
+    working_dir: /app
+    volumes:
+      - ./transaction-service:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8585:8585"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - postgres
+      - orchestrator
+    environment:
+      SERVER_PORT: 8585
+      SPRING_APPLICATION_NAME: transaction-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+    networks:
+      - app-network
+
+  orchestrator:
+    image: openjdk:21-jdk-slim
+    container_name: orchestrator_service_1
+    working_dir: /app
+    volumes:
+      - ./camel-orchestration:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8787:8787"
+    command: [ "/bin/sh", "-c", "cd /app && ./mvnw clean spring-boot:run" ]
+    depends_on:
+      - postgres
+    environment:
+      SERVER_PORT: 8787
+      SPRING_APPLICATION_NAME: orchestrator-service
+      SPRING_APPLICATION_INSTANCE_ID: instance-1
+
+      CLIENT_TRANSACTION_SERVICE_URI: http://transaction1:8585/api/v1/digital-documents/library/transactions
+      CLIENT_TRANSACTION_SERVICE_ROLLBACK_URI: http://transaction1:8585/api/v1/digital-documents/library/transactions/rollback
+      CLIENT_TRANSACTION_SERVICE_COMPLETE_URI: http://transaction1:8585/api/v1/digital-documents/library/transactions/complete
+      CLIENT_ACCOUNT_SERVICE_URI: http://account1:8484/api/v1/digital-documents/library/accounts/update-balance
+      CLIENT_ACCOUNT_SERVICE_ROLLBACK_URI: http://account1:8484/api/v1/digital-documents/library/accounts/update-balance/rollback
+      CLIENT_ACCOUNT_SERVICE_COMPLETE_URI: http://account1:8484/api/v1/digital-documents/library/accounts/update-balance/complete
+      CLIENT_FRAUD_SERVICE_URI: http://fraud1:8686/api/v1/digital-documents/library/fraud-detection
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  postgres_data:

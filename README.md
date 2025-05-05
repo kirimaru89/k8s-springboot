@@ -2,22 +2,22 @@
 
 ## Tổng quan
 
-Dự án này triển khai một hệ thống microservices trên Kubernetes, sử dụng Spring Boot cho các ứng dụng và tích hợp nhiều công nghệ hiện đại như Kafka, Redis, Prometheus, Grafana, Tempo, OpenTelemetry, và HashiCorp Vault.
+Dự án triển khai một hệ thống microservices trên Kubernetes, sử dụng Spring Boot cho các ứng dụng và tích hợp nhiều công nghệ hiện đại như Kafka, Redis, Prometheus, Grafana, Tempo, OpenTelemetry, và HashiCorp Vault.
 
 ## Cấu trúc Dự án
 
 Dự án được chia thành hai thư mục chính:
 
 ### 1. Thư mục `demo`
-Chứa các ứng dụng Spring Boot chính:
+Chứa các ứng dụng Spring Boot chính (các ứng dụng đều có logging, metrics & tracing)
 
 - **spring-app-1**: API Gateway/Service
   - Vai trò: Cổng giao tiếp chính cho hệ thống
-  - Cấu hình: Sử dụng Vault, Circuit breaker, OpenTelemetry
+  - Cấu hình: Sử dụng Vault, Circuit breaker
 
 - **spring-app-2**: Service xử lý nghiệp vụ
   - Vai trò: Xử lý các nghiệp vụ chính của hệ thống
-  - Tính năng: Tích hợp database, Circuit breaker
+  - Tính năng: Circuit breaker
 
 - **spring-app-3**: Service gửi request (Producer)
   - Vai trò: Gửi yêu cầu qua Kafka
@@ -28,15 +28,15 @@ Chứa các ứng dụng Spring Boot chính:
   - Tích hợp: Request/Reply pattern với spring-app-3
 
 ### 2. Thư mục `projecttemplate`
-Chứa các ứng dụng Kafka:
+Chứa các ứng dụng Kafka (các ứng dụng đều có logging, metrics & tracing):
 
 - **com.vietinbank.kproducer**: Producer Kafka
   - Vai trò: Gửi tin nhắn vào Kafka
-  - Tích hợp: Message streaming
+  - Tích hợp: Redis, Kafka
 
 - **com.vietinbank.kconsumer**: Consumer Kafka
   - Vai trò: Nhận và xử lý tin nhắn từ Kafka
-  - Tích hợp: Message streaming
+  - Tích hợp: Kafka
 
 ## Kiến trúc Hệ thống
 
@@ -63,7 +63,6 @@ Chứa các ứng dụng Kafka:
 #### Cơ sở dữ liệu
 - MySQL
 - PostgreSQL
-- Oracle (development)
 
 #### Caching
 - Redis
@@ -99,17 +98,10 @@ Chứa các ứng dụng Kafka:
 
 ## Triển khai và Vận hành
 
-### Ảnh Container
-- Xây dựng với Docker BuildKit
-- Nền tảng: linux/arm64
-- Ảnh nền: Spring Boot
-- Xây dựng nhiều giai đoạn (Multi-stage builds)
-
 ### Triển khai Kubernetes
 - Deployments cho mỗi dịch vụ
 - ConfigMaps cho cấu hình
 - Secrets cho dữ liệu nhạy cảm
-- Tài khoản dịch vụ và RBAC
 
 ### Giám sát và Cảnh báo
 - Cảnh báo Prometheus

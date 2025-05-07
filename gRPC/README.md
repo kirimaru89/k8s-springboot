@@ -1,5 +1,5 @@
 # I. Đóng gói protobuffer
-
+# Compile library-grpc-0.1.2.jar to add to other project dependencies
 ```shell
 cd proto
 mvn clean install -DskipTests

@@ -15,6 +15,8 @@ public class BodyFilterProperties {
     // Default constructor with sensible defaults
     public BodyFilterProperties() {
         // Default patterns if ConfigMap isn't available
+        List<String> texts = new ArrayList<>();
+
         patterns.add(new PatternReplacement(
             "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b", 
             "****-****-****-$4"));

@@ -1,12 +1,17 @@
 package com.example.orchestrator.routes.createTransaction;
 
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.SagaPropagation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.apache.camel.model.rest.RestBindingMode;
 
 @Component
 public class CreateTransactionSagaRoute extends RouteBuilder {
+    @Autowired
+    private ProducerTemplate producerTemplate;
+    
     @Override
     public void configure() throws Exception {
         // REST Configuration

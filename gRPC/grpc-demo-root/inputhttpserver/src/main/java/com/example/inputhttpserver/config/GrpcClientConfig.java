@@ -1,12 +1,13 @@
 package com.example.inputhttpserver.config;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.micrometer.observation.ObservationRegistry;
-import io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor;
+import io.micrometer.observation.ObservationRegistry;
 
 @Configuration
 public class GrpcClientConfig {

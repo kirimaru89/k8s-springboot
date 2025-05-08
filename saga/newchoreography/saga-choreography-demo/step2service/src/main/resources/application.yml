@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: step2service
+  kafka:
+    bootstrap-servers: localhost:9092 # Replace with your Kafka broker address
+    consumer:
+      group-id: step2-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8082
+
+logbook:
+  include:
+    - /api/**
+  format:
+    style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Secret
+    parameters:
+      - password
+      - secretKey
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always 

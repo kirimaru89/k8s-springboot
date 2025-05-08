@@ -1,7 +1,8 @@
 package com.example.inputhttpserver.service;
 
-import com.example.inputhttpserver.client.GrpcClient;
 import org.springframework.stereotype.Service;
+
+import com.example.inputhttpserver.client.GrpcClient;
 
 @Service
 public class GreetingService {

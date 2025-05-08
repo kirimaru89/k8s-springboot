@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  orchestrationservice:
+    build:
+      context: ./orchestrationservice
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dlogging.level.com.example=INFO -Dlogging.level.org.apache.camel=INFO
+      # To simulate failures in step2 or step3, uncomment and set the property for the respective service
+      # - JAVA_TOOL_OPTIONS=-Dsimulate.failure=true # This would need to be targeted to specific services
+    networks:
+      - saga-network
+    depends_on:
+      - step1service
+      - step2service
+      - step3service
+
+  step1service:
+    build:
+      context: ./step1service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dlogging.level.com.example=INFO
+    networks:
+      - saga-network
+
+  step2service:
+    build:
+      context: ./step2service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dlogging.level.com.example=INFO -Dsimulate.failure=${SIMULATE_STEP2_FAILURE:-false}
+    networks:
+      - saga-network
+
+  step3service:
+    build:
+      context: ./step3service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dlogging.level.com.example=INFO -Dsimulate.failure=${SIMULATE_STEP3_FAILURE:-false}
+    networks:
+      - saga-network
+
+networks:
+  saga-network:
+    driver: bridge 

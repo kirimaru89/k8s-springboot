@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: orchestrationservice
+
+camel:
+  springboot:
+    name: SagaOrchestrator
+  saga:
+    enabled: true
+    service:
+      lra:
+        enabled: false # Disable LRA if not used, or configure appropriately
+  component:
+    http:
+      connect-timeout: 5000    # 5 seconds connection timeout
+      socket-timeout: 10000   # 10 seconds read timeout
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,camelroutes"
+  endpoint:
+    health:
+      show-details: always
+
+# Configuration for calling other services
+services:
+  step1:
+    url: http://step1service:8081
+  step2:
+    url: http://step2service:8082
+  step3:
+    url: http://step3service:8083 

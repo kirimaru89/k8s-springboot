@@ -1,0 +1,31 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+
+exporters:
+  logging: # Optional: for debugging the collector itself
+    loglevel: debug
+
+  otlp/tempo: # Exporter for traces to Tempo
+    endpoint: tempo:4317 # Tempo's OTLP gRPC endpoint
+    tls:
+      insecure: true
+
+  prometheus: # Exporter for metrics (collector exposes an endpoint for Prometheus to scrape)
+    endpoint: "0.0.0.0:8889" # Collector exposes metrics on this port
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/tempo, logging] # Send traces to Tempo and logs
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus, logging] # Expose metrics for Prometheus and send to logs 

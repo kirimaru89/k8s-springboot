@@ -1,13 +1,31 @@
 spring:
   application:
-    name: service-b
+    name: service-b # Used as OTEL service.name
+
+# Configure a separate management port for actuator endpoints (like prometheus)
+# as the main server port 9090 is for gRPC.
+server:
+  port: 9091 # Changed from 9090 to 9091 to avoid conflict with gRPC port
+             # The main web server will now use the management port.
 
 management:
+  server:
+    port: 9091 # HTTP port for Actuator (/actuator/prometheus)
   endpoints:
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,prometheus"
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces # Use OTLP/HTTP to collector's HTTP port with full path
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 grpc:
   server:
-    port: 9090 
+    port: 9090 # Ensure gRPC server still uses this port 

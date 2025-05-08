@@ -8,10 +8,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - GRPC_CLIENT_SERVICE-B_ADDRESS=service-b # Overrides application.yml for Docker
+      # Spring Boot properties will take precedence for OTLP endpoint if defined in application.yml
+      - OTEL_SERVICE_NAME=service-a # Can also be set via spring.application.name
+      - GRPC_CLIENT_SERVICE-B_ADDRESS=service-b # Override for Docker networking
       - GRPC_CLIENT_SERVICE-B_PORT=9090
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 # Set in application.yml
     depends_on:
       - service-b
+      - otel-collector # Ensure collector is up before service-a starts sending traces
     networks:
       - grpc-demo-net
 
@@ -20,10 +24,85 @@ services:
       context: ./service-b
       dockerfile: Dockerfile
     ports:
-      - "9090:9090"
+      - "9090:9090" # gRPC port
+      - "9091:9091" # Management port for Prometheus scraping
+    environment:
+      - OTEL_SERVICE_NAME=service-b
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 # Set in application.yml
+    depends_on:
+      - otel-collector # Ensure collector is up before service-b starts sending traces
     networks:
       - grpc-demo-net
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.93.0 # Use a recent version
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"  # OTLP gRPC receiver
+      - "4318:4318"  # OTLP HTTP receiver (if needed)
+      - "8889:8889"  # Prometheus exporter from collector
+    networks:
+      - grpc-demo-net
+    depends_on:
+      - tempo # Ensure tempo is available for the collector to export to
+
+  tempo:
+    image: grafana/tempo:latest
+    user: "0:0" # Run as root user to ensure write permissions to the volume
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - type: bind
+        source: ./tempo-config.yaml # We need to create this basic config
+        target: /etc/tempo.yaml
+      - type: volume
+        source: tempo-data
+        target: /tmp/tempo
+    ports:
+      - "3200:3200"  # Tempo gRPC (OTLP default in older versions, now usually 4317 for OTLP)
+      - "14268:14268" # Jaeger gRPC (if Tempo is configured for Jaeger receiver)
+      - "14250:14250" # Jaeger HTTP Thrift (if Tempo is configured for Jaeger receiver)
+    networks:
+      - grpc-demo-net
+
+  prometheus:
+    image: prom/prometheus:v2.49.1 # Use a recent version
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - type: volume
+        source: prometheus-data
+        target: /prometheus
+    ports:
+      - "9095:9090" # Prometheus UI (Changed to 9095 to avoid clash with service-b gRPC)
+    networks:
+      - grpc-demo-net
+
+  grafana:
+    image: grafana/grafana:10.3.3 # Use a recent version
+    ports:
+      - "3000:3000" # Grafana UI
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - type: volume
+        source: grafana-data
+        target: /var/lib/grafana
+      # - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml # Optional: for pre-configured datasources
+    networks:
+      - grpc-demo-net
+    depends_on:
+      - prometheus
+      - tempo
+
 networks:
   grpc-demo-net:
-    driver: bridge 
+    driver: bridge
+
+volumes:
+  tempo-data:
+  prometheus-data:
+  grafana-data: 

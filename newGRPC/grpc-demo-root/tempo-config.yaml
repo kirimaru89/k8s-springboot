@@ -1,0 +1,36 @@
+server:
+  http_listen_port: 3200 # Port for Tempo's own API/UI if any, also used for OTLP gRPC by default in some configs.
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317 # Tempo listens for OTLP gRPC traces on this port
+        http:
+          endpoint: 0.0.0.0:4318
+
+ingester:
+  trace_idle_period: 10s
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo/blocks
+
+metrics_generator:
+  storage:
+    path: /tmp/tempo/generator/wal
+  processor:
+    service_graphs:
+      # enabled: true # This field is not valid and causes the error
+      # Add other service_graphs specific configs here if needed, e.g., dimensions, wait, max_items, workers
+    span_metrics:
+      # enabled: true # This field is not valid and causes the error
+      dimensions:
+        - http.method
+        - http.status_code
+        - grpc.method
+        - grpc.status_code
+      # Add other span_metrics specific configs here if needed, e.g., wait, max_items, workers 

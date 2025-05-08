@@ -5,12 +5,6 @@ spring:
 server:
   port: 8080
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "health,info"
-
 grpc:
   client:
     service-b:
@@ -19,4 +13,20 @@ grpc:
 
 logging:
   level:
-    com.example.servicea.config.LoggingClientInterceptor: DEBUG 
+    com.example.servicea.config.LoggingClientInterceptor: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+  prometheus:
+    metrics:
+      export:
+        enabled: true

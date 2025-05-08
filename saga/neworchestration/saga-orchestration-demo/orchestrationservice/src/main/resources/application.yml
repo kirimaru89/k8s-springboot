@@ -13,10 +13,10 @@ camel:
     service:
       lra:
         enabled: false # Disable LRA if not used, or configure appropriately
-  component:
-    http:
-      connect-timeout: 5000    # 5 seconds connection timeout
-      socket-timeout: 10000   # 10 seconds read timeout
+  # component:
+  #   http:
+  #     connect-timeout: 5000    # 5 seconds connection timeout
+  #     socket-timeout: 10000   # 10 seconds read timeout
 
 management:
   endpoints:

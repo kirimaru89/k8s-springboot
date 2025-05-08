@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: grpcserver # Renamed from service-b
+
+server:
+  port: 9091
+
+management:
+  server:
+    port: 9091
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+grpc:
+  server:
+    port: 9090 

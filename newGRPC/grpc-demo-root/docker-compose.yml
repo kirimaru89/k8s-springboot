@@ -1,33 +1,33 @@
 version: '3.8'
 
 services:
-  service-a:
+  inputhttpserver:
     build:
-      context: ./service-a
+      context: ./inputhttpserver
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
       # Spring Boot properties will take precedence for OTLP endpoint if defined in application.yml
-      - OTEL_SERVICE_NAME=service-a # Can also be set via spring.application.name
-      - GRPC_CLIENT_SERVICE-B_ADDRESS=service-b # Override for Docker networking
-      - GRPC_CLIENT_SERVICE-B_PORT=9090
+      - OTEL_SERVICE_NAME=inputhttpserver # Updated service name
+      - GRPC_CLIENT_GRPCSERVER_ADDRESS=grpcserver # Updated env var to point to new service name
+      - GRPC_CLIENT_GRPCSERVER_PORT=9090
       # - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 # Set in application.yml
     depends_on:
-      - service-b
+      - grpcserver # Updated dependency
       - otel-collector # Ensure collector is up before service-a starts sending traces
     networks:
       - grpc-demo-net
 
-  service-b:
+  grpcserver:
     build:
-      context: ./service-b
+      context: ./grpcserver
       dockerfile: Dockerfile
     ports:
       - "9090:9090" # gRPC port
       - "9091:9091" # Management port for Prometheus scraping
     environment:
-      - OTEL_SERVICE_NAME=service-b
+      - OTEL_SERVICE_NAME=grpcserver # Updated service name
       # - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 # Set in application.yml
     depends_on:
       - otel-collector # Ensure collector is up before service-b starts sending traces

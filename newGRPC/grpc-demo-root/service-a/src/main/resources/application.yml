@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: service-a
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+
+grpc:
+  client:
+    service-b:
+      address: localhost # This will be overridden by Docker Compose to 'service-b'
+      port: 9090 

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  service-a:
+    build:
+      context: ./service-a
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - GRPC_CLIENT_SERVICE-B_ADDRESS=service-b # Overrides application.yml for Docker
+      - GRPC_CLIENT_SERVICE-B_PORT=9090
+    depends_on:
+      - service-b
+    networks:
+      - grpc-demo-net
+
+  service-b:
+    build:
+      context: ./service-b
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    networks:
+      - grpc-demo-net
+
+networks:
+  grpc-demo-net:
+    driver: bridge 

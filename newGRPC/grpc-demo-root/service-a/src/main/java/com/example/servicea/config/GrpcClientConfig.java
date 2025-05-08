@@ -19,6 +19,7 @@ public class GrpcClientConfig {
     @Bean
     public ManagedChannel managedChannel() {
         return ManagedChannelBuilder.forAddress(serviceBAddress, serviceBPort)
+                .intercept(new LoggingClientInterceptor())
                 .usePlaintext()
                 .build();
     }

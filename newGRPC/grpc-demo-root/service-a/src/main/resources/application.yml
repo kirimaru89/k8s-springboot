@@ -15,4 +15,8 @@ grpc:
   client:
     service-b:
       address: localhost # This will be overridden by Docker Compose to 'service-b'
-      port: 9090 
+      port: 9090
+
+logging:
+  level:
+    com.example.servicea.config.LoggingClientInterceptor: DEBUG 

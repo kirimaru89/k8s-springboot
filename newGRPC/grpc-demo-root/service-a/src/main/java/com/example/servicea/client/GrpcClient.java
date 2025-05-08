@@ -1,12 +1,14 @@
 package com.example.servicea.client;
 
-import com.example.grpc.GreeterGrpc;
-import com.example.grpc.StringRequest;
-import com.example.grpc.HelloResponse;
-import io.grpc.ManagedChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import com.example.grpc.GreeterGrpc;
+import com.example.grpc.HelloResponse;
+import com.example.grpc.StringRequest;
+
+import io.grpc.ManagedChannel;
 
 @Component
 public class GrpcClient {
@@ -20,9 +22,9 @@ public class GrpcClient {
 
     public String sayHello(String name) {
         StringRequest request = StringRequest.newBuilder().setName(name).build();
-        log.info("Calling gRPC service with name: {}", name);
+        // log.info("Calling gRPC service with name: {}", name);
         HelloResponse response = greeterStub.sayHello(request);
-        log.info("Received gRPC response: {}", response.getMessage());
+        // log.info("Received gRPC response: {}", response.getMessage());
         return response.getMessage();
     }
 } 

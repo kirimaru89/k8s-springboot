@@ -54,7 +54,7 @@ grpc-demo-root/
     Ensure you are in the `grpc-demo-root` directory where `docker-compose.yml` is located.
 
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 
     This command will build the Docker images (if not already built or if changes are detected) and start both services.
@@ -89,5 +89,5 @@ Hello YourName
 To stop the services run via Docker Compose:
 
 ```bash
-docker-compose down
+docker compose down
 ``` 

@@ -35,6 +35,9 @@ public class StepController {
 
     @PostMapping("/reverse")
     public String reverseStep(@RequestBody String input) {
+        if(input == null) {
+            log.warn("Step 2: Received null input for reverse request");
+        }
         log.info("Step 2: Received reverse request with input: {}", input);
         String result = "Step 2 reversed: " + input;
         log.info("Step 2: Reversal completed, returning: {}", result);

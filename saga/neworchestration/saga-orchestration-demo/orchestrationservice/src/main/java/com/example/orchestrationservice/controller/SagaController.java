@@ -26,7 +26,7 @@ public class SagaController {
         log.info("Received request to start saga with payload: {}", inputPayload);
         try {
             // Send the payload to the Camel direct endpoint to start the saga
-            String result = producerTemplate.requestBody("direct:startSaga", inputPayload, String.class);
+            String result = producerTemplate.requestBody("direct:startSagaOrchestration", inputPayload, String.class);
             log.info("Saga processing finished. Result from orchestrator: {}", result);
             return ResponseEntity.ok(result); // Return the final message from the saga route
         } catch (CamelExecutionException e) {

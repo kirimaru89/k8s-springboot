@@ -1,6 +1,7 @@
 package com.example.orchestrationservice.route;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.SagaCompletionMode;
 import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -27,32 +28,11 @@ public class SagaRouteBuilder extends RouteBuilder {
             .completionMode(SagaCompletionMode.AUTO)
             .to("direct:step1")
             .to("direct:step2")
-            // .to("direct:step3")
+                // .compensation("direct:rollbackStep2")
+            .to("direct:step3")
+                // .compensation("direct:rollbackStep3")
             .log("Saga completed successfully!")
             .end();
-        
-        // from("direct:createTransaction")
-        //     .saga()
-        //     // 1. Lưu dữ liệu gốc vào property
-        //     .process(exchange -> {
-        //         CreateTransactionRequestDto originalRequest = exchange.getIn().getBody(CreateTransactionRequestDto.class);
-        //         exchange.setProperty("originalRequestBody", originalRequest);
-        //     })
-        //     .log("Camel: [TransactionService] Creating transaction with ID")
-        //     .marshal().json()   // <-- Serialize to JSON
-        //     .to(transactionServiceUri)
-        //     .process(exchange -> {
-        //         /* cần unwrap ResponseEntity */
-        //         // Lấy response body
-        //         String body = exchange.getIn().getBody(String.class);
-        //         ApiResponseDto<TransactionResponseDto> parsed = JsonUtils.readValue(body, new TypeReference<ApiResponseDto<TransactionResponseDto>>() {});
-        //         exchange.getIn().setBody(parsed);
-
-        //         /* cần bổ sung transactionId */
-        //         exchange.setProperty("transactionId", parsed.getData().getId());
-        //     })
-        //     .log("Camel: [TransactionService] Transaction created successfully")
-        //     .end();
 
         from("direct:step1")
             .saga()
@@ -71,6 +51,8 @@ public class SagaRouteBuilder extends RouteBuilder {
         from("direct:step2")
             .saga()
             .process(exchange -> {
+                String body = exchange.getIn().getBody(String.class);
+                log.info("Step 2! Body: {}", body);
             })
             .log("Before execute step2!")
             .marshal().json()
@@ -82,12 +64,28 @@ public class SagaRouteBuilder extends RouteBuilder {
             .log("Step 2 completed successfully!")
             .end();
 
-        // from("direct:step2")
-        //     .log("Step 2 completed successfully!")
-        //     .end();
+        from("direct:rollbackStep2")
+            .log("Rollback step2!")
+            .end();
 
-        // from("direct:step3")
-        //     .log("Step 3 completed successfully!")
-        //     .end();
+        from("direct:step3")
+            .saga()
+            .process(exchange -> {
+                String body = exchange.getIn().getBody(String.class);
+                log.info("Step 3! Body: {}", body);
+            })
+            .log("Before execute step3!")
+            .marshal().json()
+            .to("http://step3service:8083/step3/execute")
+            .process(exchange -> {
+                String body = exchange.getIn().getBody(String.class);
+                log.info("Step 3! Body: {}", body);
+            })
+            .log("Step 3 completed successfully!")
+            .end();
+
+        from("direct:rollbackStep3")
+            .log("Rollback step3!")
+            .end();
     }
 }

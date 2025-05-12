@@ -7,6 +7,7 @@ import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.stereotype.Component;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.Exchange;
 
 @Component
 public class SagaRouteBuilder extends RouteBuilder {
@@ -26,18 +27,37 @@ public class SagaRouteBuilder extends RouteBuilder {
             .choice()
                 .when(exchangeProperty("step").isEqualTo("step2"))
                     .to("direct:rollbackStep1")
+                    .to("direct:handleError400")
                 .when(exchangeProperty("step").isEqualTo("step3"))
                     .to("direct:rollbackStep2")
                     .to("direct:rollbackStep1")
-                    // .multicast()
-                    //     .parallelProcessing()
-                    //     .to("direct:rollbackStep2", "direct:rollbackStep1")
+                    .to("direct:handleError500")
                 .otherwise()
-                    .to("direct:rollbackStep1");
+                    .to("direct:rollbackStep1")
+                    .to("direct:handleError500")
+            .end();
+
+        // Error handling routes
+        from("direct:handleError400")
+            .process(exchange -> {
+                exchange.getIn().setHeader("CamelHttpResponseCode", 400);
+                exchange.getIn().setBody("Error in step2: " + exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class).getMessage());
+            })
+            .stop();
+
+        from("direct:handleError500")
+            .process(exchange -> {
+                exchange.getIn().setHeader("CamelHttpResponseCode", 500);
+                exchange.getIn().setBody("Error in step3: " + exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class).getMessage());
+            })
+            .stop();
 
         // REST Endpoint to start saga
         rest("/saga")
             .post("/start")
+            .responseMessage().code(200).endResponseMessage()
+            .responseMessage().code(400).endResponseMessage()
+            .responseMessage().code(500).endResponseMessage()
             .to("direct:startSagaOrchestration");
 
         // Define the saga route

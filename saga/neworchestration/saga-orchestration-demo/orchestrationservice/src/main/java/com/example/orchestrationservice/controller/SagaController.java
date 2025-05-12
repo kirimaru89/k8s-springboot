@@ -26,7 +26,6 @@ public class SagaController {
     public ResponseEntity<String> startSaga(@RequestBody String inputPayload) {
         log.info("Received request to start saga with payload: {}", inputPayload);
         try {
-            // Send the payload to the Camel direct endpoint to start the saga
             Exchange exchange = producerTemplate.send("direct:startSagaOrchestration", ex -> {
                 ex.getIn().setBody(inputPayload);
             });
@@ -34,7 +33,6 @@ public class SagaController {
             String result = exchange.getMessage().getBody(String.class);
             log.info("Saga processing finished. Result from orchestrator: {}", result);
             
-            // Get the response code from exchange
             Integer responseCode = exchange.getMessage().getHeader("CamelHttpResponseCode", Integer.class);
             if (responseCode != null) {
                 log.info("Saga execution failed with response code: {}", responseCode);

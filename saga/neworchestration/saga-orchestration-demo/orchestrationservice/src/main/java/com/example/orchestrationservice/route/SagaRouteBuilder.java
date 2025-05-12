@@ -55,9 +55,6 @@ public class SagaRouteBuilder extends RouteBuilder {
         // REST Endpoint to start saga
         rest("/saga")
             .post("/start")
-            .responseMessage().code(200).endResponseMessage()
-            .responseMessage().code(400).endResponseMessage()
-            .responseMessage().code(500).endResponseMessage()
             .to("direct:startSagaOrchestration");
 
         // Define the saga route

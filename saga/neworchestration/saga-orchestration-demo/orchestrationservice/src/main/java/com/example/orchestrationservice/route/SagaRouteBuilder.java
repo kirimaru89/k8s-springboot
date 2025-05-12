@@ -67,6 +67,7 @@ public class SagaRouteBuilder extends RouteBuilder {
             .completionMode(SagaCompletionMode.AUTO)
             .to("direct:step1")
             .to("direct:step2")
+            .to("direct:step3")
             .log("Saga completed successfully!")
             .end();
 
@@ -78,8 +79,9 @@ public class SagaRouteBuilder extends RouteBuilder {
                 exchange.setProperty("originalRequestBody", body);
             })
             .log("Before execute step1!")
-            .marshal().json()
+            .marshal().json(JsonLibrary.Jackson)
             .to("http://step1service:8081/step1/execute")
+            .convertBodyTo(String.class)
             .process(exchange -> {
                 String body = exchange.getIn().getBody(String.class);
                 log.info("--------------- After execute step1! Body: {}", body);
@@ -123,10 +125,11 @@ public class SagaRouteBuilder extends RouteBuilder {
             .log("Before execute step2!")
             .marshal().json(JsonLibrary.Jackson)
             .to("http://step2service:8082/step2/execute")
-            .unmarshal().json(JsonLibrary.Jackson)
+            .convertBodyTo(String.class)
             .process(exchange -> {
                 String body = exchange.getIn().getBody(String.class);
                 log.info("--------------- After execute step2! Body: {}", body);
+                exchange.setProperty("step", "step3");
             })
             .log("Step 2 completed successfully!")
             .end();
@@ -143,7 +146,7 @@ public class SagaRouteBuilder extends RouteBuilder {
             .log("Before rollback step2!")
             .marshal().json(JsonLibrary.Jackson)
             .to("http://step2service:8082/step2/reverse")
-            .unmarshal().json(JsonLibrary.Jackson)
+            .convertBodyTo(String.class)
             .process(exchange -> {
                 String body = exchange.getIn().getBody(String.class);
                 log.info("--------------- After rollback step2! Body: {}", body);
@@ -164,10 +167,11 @@ public class SagaRouteBuilder extends RouteBuilder {
             .log("Before execute step3!")
             .marshal().json(JsonLibrary.Jackson)
             .to("http://step3service:8083/step3/execute")
-            .unmarshal().json(JsonLibrary.Jackson)
+            .convertBodyTo(String.class)
             .process(exchange -> {
                 String body = exchange.getIn().getBody(String.class);
                 log.info("--------------- After execute step3! Body: {}", body);
+                exchange.setProperty("step", "final");
             })
             .log("Step 3 completed successfully!")
             .end();

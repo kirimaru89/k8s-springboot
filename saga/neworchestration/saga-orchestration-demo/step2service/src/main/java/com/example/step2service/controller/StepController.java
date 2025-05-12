@@ -24,7 +24,7 @@ public class StepController {
     public String executeStep(@RequestBody String input) {
         log.info("Step 2: Received execute request with input: {}", input);
         requestCount++;
-        if (input.contains("fail")) { 
+        if (input.contains("fail2")) { 
             log.warn("Step 2: Simulating execution failure for input: {}", input);
             throw new RuntimeException("Step 2 simulated execution failure");
         }

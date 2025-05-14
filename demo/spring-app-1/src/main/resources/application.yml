@@ -73,3 +73,43 @@ logbook:
       - cardNumber
   write:
     chunk-size: 1000
+
+resilience4j:
+ circuitbreaker:
+   configs:
+     default:
+       registerHealthIndicator: true 
+   instances:
+     example:
+       slidingWindowSize: 8 
+       failureRateThreshold: 50 
+       waitDurationInOpenState: 60000 
+       permittedNumberOfCallsInHalfOpenState: 3 
+       slowCallRateThreshold: 50 
+       slowCallDurationThreshold: 2000 
+       minimumNumberOfCalls: 8 
+       slidingWindowType: COUNT_BASED
+       automaticTransitionFromOpenToHalfOpenEnabled: true
+     bank-a:
+       registerHealthIndicator: true 
+       slidingWindowSize: 10 
+       failureRateThreshold: 50 
+       waitDurationInOpenState: 10000 
+       permittedNumberOfCallsInHalfOpenState: 3 
+       slowCallRateThreshold: 50 
+       slowCallDurationThreshold: 2000 
+       minimumNumberOfCalls: 10 
+       slidingWindowType: COUNT_BASED 
+     bank-b:
+       registerHealthIndicator: true 
+       slidingWindowSize: 10 
+       failureRateThreshold: 20 
+       waitDurationInOpenState: 10000 
+       permittedNumberOfCallsInHalfOpenState: 3 
+       slowCallRateThreshold: 50 
+       slowCallDurationThreshold: 2000 
+       minimumNumberOfCalls: 10 
+       slidingWindowType: COUNT_BASED 
+       automaticTransitionFromOpenToHalfOpenEnabled: true
+   metrics:
+     enabled: true

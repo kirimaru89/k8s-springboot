@@ -2,8 +2,8 @@
 
 Đây là một dự án demo đơn giản về cách thiết lập gRPC với hai microservice Spring Boot.
 
-- **InputHttpServer**: Một service HTTP gọi GrpcServer thông qua gRPC. (Trước đây là Service A)
-- **GrpcServer**: Một service gRPC. (Trước đây là Service B)
+- **InputHttpServer**: Một service HTTP gọi GrpcServer thông qua gRPC.
+- **GrpcServer**: Một service gRPC.
 
 ## Điều kiện tiên quyết
 
@@ -37,13 +37,13 @@ Phần này giải thích cách gRPC được sử dụng để giao tiếp gi�
 
 Hợp đồng giao tiếp giữa gRPC client (trong InputHttpServer) và gRPC server (trong GrpcServer) được định nghĩa trong tệp `proto/hello.proto` sử dụng Protocol Buffers.
 
-Key elements in `hello.proto`:
-- **`service Greeter`**: Defines a service named `Greeter`.
-- **`rpc SayHello (StringRequest) returns (HelloResponse) {}`**: Specifies a remote procedure call (RPC) method named `SayHello`. This method takes a `StringRequest` message as input and returns a `HelloResponse` message.
-- **`message StringRequest`**: Defines the structure of the request message, containing a single string field `name`.
-- **`message HelloResponse`**: Defines the structure of the response message, containing a single string field `message`.
-- **`option java_package = "com.example.grpc";`**: Specifies the Java package where the generated Java code will reside.
-- **`option java_multiple_files = true;`**: Instructs the generator to create separate Java files for each message and service, rather than a single outer class containing everything.
+Các thành phần trong file `hello.proto`:
+- **`service Greeter`**: Định nghĩa một service có tên `Greeter`.
+- **`rpc SayHello (StringRequest) returns (HelloResponse) {}`**: Chỉ định một phương thức gọi thủ tục từ xa (RPC) có tên `SayHello`. Phương thức này nhận một message `StringRequest` làm đầu vào và trả về một message `HelloResponse`.
+- **`message StringRequest`**: Định nghĩa cấu trúc của message request, chứa một trường string `name`.
+- **`message HelloResponse`**: Định nghĩa cấu trúc của message response, chứa một trường string `message`.
+- **`option java_package = "com.example.grpc";`**: Chỉ định package Java nơi code Java được tạo ra sẽ được đặt.
+- **`option java_multiple_files = true;`**: Hướng dẫn trình tạo tạo các file Java riêng biệt cho mỗi message và service, thay vì một class bên ngoài duy nhất chứa tất cả.
 
 ### 2. Code Generation (Maven Build)
 
@@ -52,54 +52,54 @@ Khi bạn build `inputhttpserver` và `grpcserver` bằng Maven (`mvn clean pack
 - Plugin được cấu hình với `<protoSourceRoot>../proto</protoSourceRoot>`. Điều này cho Maven biết nơi tìm các tệp `.proto` trong một thư mục tên là `proto` nằm ở cấp trên một bậc so với thư mục của service hiện tại (tức là trong `grpc-demo-root/proto/`). Điều này cho phép cả hai service chia sẻ cùng một định nghĩa `hello.proto`.
 
 Plugin này thực hiện hai nhiệm vụ chính:
-1.  **Biên dịch `.proto` sang Java**: It uses `protoc` (the Protocol Buffer compiler) to generate Java classes from the `.proto` definition. These classes include:
-    *   `StringRequest.java` and `HelloResponse.java`: For creating and manipulating request and response messages.
-    *   `GreeterGrpc.java`: Contains the client stub and server base implementation for the `Greeter` service.
-        *   **Client Stub (`GreeterGrpc.GreeterBlockingStub` or `GreeterGrpc.GreeterFutureStub`)**: Used by InputHttpServer to make calls to the `SayHello` method.
-        *   **Server Base Class (`GreeterGrpc.GreeterImplBase`)**: Extended by GrpcServer to implement the actual logic for the `SayHello` method.
+1.  **Biên dịch `.proto` sang Java**: Nó sử dụng `protoc` (trình biên dịch Protocol Buffer) để tạo các class Java từ định nghĩa `.proto`. Các class này bao gồm:
+    *   `StringRequest.java` và `HelloResponse.java`: Để tạo và thao tác với các message request và response.
+    *   `GreeterGrpc.java`: Chứa client stub và triển khai cơ sở của server cho service `Greeter`.
+        *   **Client Stub (`GreeterGrpc.GreeterBlockingStub` hoặc `GreeterGrpc.GreeterFutureStub`)**: Được InputHttpServer sử dụng để gọi phương thức `SayHello`.
+        *   **Server Base Class (`GreeterGrpc.GreeterImplBase`)**: Được GrpcServer mở rộng để triển khai logic thực tế cho phương thức `SayHello`.
 
-These generated Java files are placed in the `target/generated-sources/protobuf/java` and `target/generated-sources/protobuf/grpc-java` directories of each service and are automatically included in the compilation classpath.
+Các file Java được tạo ra này được đặt trong thư mục `target/generated-sources/protobuf/java` và `target/generated-sources/protobuf/grpc-java` của mỗi service và được tự động đưa vào classpath khi biên dịch.
 
 ### 3. GrpcServer (Triển khai Server gRPC)
 
 -   **`grpcserver/src/main/java/com/example/grpcserver/service/GrpcServerService.java`**:
-    *   This class extends `GreeterGrpc.GreeterImplBase` (the generated base class).
-    *   It overrides the `sayHello` method to provide the actual implementation. When called, it constructs a `HelloResponse` and sends it back to the client.
--   **Khởi động Server gRPC**: The `net.devh:grpc-server-spring-boot-starter` dependency in `grpcserver` automatically discovers beans annotated with `@GrpcService` (like `GrpcServerService`) and starts a gRPC server listening on the configured port (e.g., 9090).
+    *   Class này mở rộng `GreeterGrpc.GreeterImplBase` (class cơ sở được tạo ra).
+    *   Nó ghi đè phương thức `sayHello` để cung cấp triển khai thực tế. Khi được gọi, nó tạo một `HelloResponse` và gửi lại cho client.
+-   **Khởi động Server gRPC**: Dependency `net.devh:grpc-server-spring-boot-starter` trong `grpcserver` tự động phát hiện các bean được đánh dấu với `@GrpcService` (như `GrpcServerService`) và khởi động một gRPC server lắng nghe trên cổng được cấu hình (ví dụ: 9090).
 
 ### 4. InputHttpServer (Triển khai Client gRPC)
 
 -   **`inputhttpserver/src/main/java/com/example/inputhttpserver/config/GrpcClientConfig.java`**:
-    *   This configuration class creates a `ManagedChannel`. A `ManagedChannel` represents a connection to a gRPC server.
-    *   It's configured to connect to GrpcServer (address `grpcserver`, port `9090` - overridden by Docker Compose for inter-container communication).
-    *   It also registers interceptors like `LoggingClientInterceptor` (for custom logging) and `ObservationGrpcClientInterceptor` (for distributed tracing).
+    *   Class cấu hình này tạo một `ManagedChannel`. Một `ManagedChannel` đại diện cho một kết nối đến gRPC server.
+    *   Nó được cấu hình để kết nối đến GrpcServer (địa chỉ `grpcserver`, cổng `9090` - được ghi đè bởi Docker Compose cho giao tiếp giữa các container).
+    *   Nó cũng đăng ký các interceptor như `LoggingClientInterceptor` (cho logging tùy chỉnh) và `ObservationGrpcClientInterceptor` (cho distributed tracing).
 -   **`inputhttpserver/src/main/java/com/example/inputhttpserver/client/GrpcClient.java`**:
-    *   This client component receives the `ManagedChannel` as a dependency.
-    *   It creates a gRPC client stub using `GreeterGrpc.newBlockingStub(channel)`.
-    *   The `sayHello(String name)` method in this client uses the stub to:
-        1.  Create a `StringRequest`.
-        2.  Call the `sayHello` RPC method on the stub, sending the request.
-        3.  Receive the `HelloResponse` from GrpcServer.
--   **Tích hợp**: `HelloController` -> `GreetingService` -> `GrpcClient` is the flow within InputHttpServer to trigger the gRPC call.
+    *   Component client này nhận `ManagedChannel` như một dependency.
+    *   Nó tạo một gRPC client stub sử dụng `GreeterGrpc.newBlockingStub(channel)`.
+    *   Phương thức `sayHello(String name)` trong client này sử dụng stub để:
+        1.  Tạo một `StringRequest`.
+        2.  Gọi phương thức RPC `sayHello` trên stub, gửi request.
+        3.  Nhận `HelloResponse` từ GrpcServer.
+-   **Tích hợp**: `HelloController` -> `GreetingService` -> `GrpcClient` là luồng trong InputHttpServer để kích hoạt cuộc gọi gRPC.
 
 ### Tóm tắt Tương tác
 
 1.  Người dùng gửi một HTTP GET request đến `/hello/{name}` trên InputHttpServer.
 2.  `HelloController` của InputHttpServer gọi `GreetingService`.
 3.  `GreetingService` gọi `GrpcClient`.
-4.  `GrpcClient` uses the generated `GreeterGrpc.GreeterBlockingStub` (configured with a `ManagedChannel` pointing to GrpcServer) to invoke the `sayHello` RPC method.
-    *   The client stub serializes the `StringRequest` into the Protocol Buffer binary format.
-    *   Trace context (if configured, like with Micrometer) is injected into the gRPC metadata (headers).
-5.  The request travels over the network to GrpcServer's gRPC server.
-6.  `GrpcServerService` của GrpcServer (the `GreeterImplBase` implementation) receives the request.
-    *   Trace context is extracted from metadata.
-    *   The server deserializes the `StringRequest`.
-7.  `GrpcServerService` processes the request and creates a `HelloResponse`.
-8.  The server serializes the `HelloResponse` and sends it back.
-9.  `GrpcClient` của InputHttpServer receives the `HelloResponse`, deserializes it, and returns the message content.
-10. InputHttpServer sends the message back as the HTTP response.
+4.  `GrpcClient` sử dụng `GreeterGrpc.GreeterBlockingStub` được tạo ra (được cấu hình với một `ManagedChannel` trỏ đến GrpcServer) để gọi phương thức RPC `sayHello`.
+    *   Client stub serialize `StringRequest` thành định dạng nhị phân Protocol Buffer.
+    *   Trace context (nếu được cấu hình, như với Micrometer) được chèn vào metadata gRPC (headers).
+5.  Request đi qua mạng đến gRPC server của GrpcServer.
+6.  `GrpcServerService` của GrpcServer (triển khai của `GreeterImplBase`) nhận request.
+    *   Trace context được trích xuất từ metadata.
+    *   Server deserialize `StringRequest`.
+7.  `GrpcServerService` xử lý request và tạo một `HelloResponse`.
+8.  Server serialize `HelloResponse` và gửi lại.
+9.  `GrpcClient` của InputHttpServer nhận `HelloResponse`, deserialize nó, và trả về nội dung message.
+10. InputHttpServer gửi message trở lại như là HTTP response.
 
-This setup allows for efficient, strongly-typed communication between the microservices, leveraging Protocol Buffers for serialization and gRPC for the RPC mechanism.
+Cấu hình này cho phép giao tiếp hiệu quả, có kiểu dữ liệu mạnh giữa các microservice, tận dụng Protocol Buffers cho serialization và gRPC cho cơ chế RPC.
 
 ## Cách Build và Chạy
 
@@ -146,15 +146,6 @@ Kết quả trả về sẽ là:
 ```
 Hello YourName
 ```
-
-(If GrpcServer successfully processed the gRPC call, the actual message might be like "Hello YourName" or similar, depending on GrpcServer's logic which is to prepend "Hello ")
-
-## Kiểm tra Sức khỏe (Health Checks)
-
-- InputHttpServer Health: `http://localhost:8080/actuator/health`
-- GrpcServer Health (via gRPC, actual HTTP endpoint depends on Actuator config if exposed over HTTP for gRPC service):
-  The gRPC health check is typically handled by the `grpc-health-probe` or similar tools. Spring Boot Actuator for gRPC services might require additional configuration to expose HTTP health endpoints if not using a gRPC health check service directly.
-  For this project, GrpcServer's health can be inferred from its logs and successful responses to InputHttpServer.
 
 ## Dừng các Service
 

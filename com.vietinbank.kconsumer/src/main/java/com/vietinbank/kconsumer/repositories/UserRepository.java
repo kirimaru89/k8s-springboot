@@ -1,6 +1,6 @@
-package com.vietinbank.kproducer.repositories;
+package com.vietinbank.kconsumer.repositories;
 
-import com.vietinbank.kproducer.models.User;
+import com.vietinbank.kconsumer.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

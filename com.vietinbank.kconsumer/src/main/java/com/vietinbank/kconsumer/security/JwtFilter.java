@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.security;
+package com.vietinbank.kconsumer.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

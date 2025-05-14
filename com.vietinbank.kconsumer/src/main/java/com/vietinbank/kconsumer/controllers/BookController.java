@@ -1,36 +1,24 @@
-package com.vietinbank.kproducer.controllers;
+package com.vietinbank.kconsumer.controllers;
 
-import com.vietinbank.kproducer.models.Book;
-import com.vietinbank.kproducer.services.BookService;
-
+import com.vietinbank.kconsumer.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.ResponseEntity;
-
-import com.vietinbank.kproducer.dto.response.ApiResponseDto;
-
-import io.swagger.v3.oas.annotations.Operation;
-
-import com.vietinbank.kproducer.dto.request.PageableDto;
-import com.vietinbank.kproducer.dto.request.book.BookCreationDto;
-import com.vietinbank.kproducer.dto.request.book.BookFilterDto;
-import com.vietinbank.kproducer.dto.response.book.BookResponseDto;
-
-import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 
-import static com.vietinbank.kproducer.config.OpenApiConfig.FORBIDDEN_ERROR_RESPONSE_SCHEMA;
+import com.vietinbank.kconsumer.dto.request.book.BookCreationDto;
+import com.vietinbank.kconsumer.dto.request.book.BookFilterDto;
+import com.vietinbank.kconsumer.dto.response.book.BookResponseDto;
 
+import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/books")
@@ -40,43 +28,41 @@ public class BookController {
 
     @Operation(summary = "Get Book List", description = "Get Book List API")
     @GetMapping
-    public ResponseEntity<ApiResponseDto<Map<String, Object>>> list(
-            @ModelAttribute PageableDto pageableDTO,
+    public ResponseEntity<Map<String, Object>> list(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             @ModelAttribute BookFilterDto filterDTO
     ) {
-        return bookService.list(pageableDTO, filterDTO);
+        return bookService.list(page, size, filterDTO);
     }
 
     @Operation(summary = "Add Book", description = "Add Book API")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ApiResponseDto<BookResponseDto>> create(@Valid @RequestBody BookCreationDto bookRequest) {
-        return bookService.create(bookRequest);
+    public ResponseEntity<BookResponseDto> create(@Valid @RequestBody BookCreationDto bookRequest) {
+        BookResponseDto response = bookService.create(bookRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Get the Book", description = "Get the Book API")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseDto<BookResponseDto>> get(
+    public ResponseEntity<BookResponseDto> get(
             @Parameter(description = "ID of the book to be fetched") @PathVariable Long id) {
-        return bookService.get(id);
+        return ResponseEntity.ok(bookService.get(id));
     }
 
     @Operation(summary = "Update Book", description = "Update Book API")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseDto<BookResponseDto>> update(
+    public ResponseEntity<BookResponseDto> update(
             @Valid @RequestBody BookCreationDto bookRequest,
             @Parameter(description = "ID of the book to be updated") @PathVariable Long id) {
-        return bookService.update(bookRequest, id);
+        return ResponseEntity.ok(bookService.update(bookRequest, id));
     }
 
     @Operation(summary = "Remove Book", description = "Remove Book API")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "403", description = "Forbidden",
-                    content = @Content(schema = @Schema(ref = "#/components/schemas/" + FORBIDDEN_ERROR_RESPONSE_SCHEMA))),
-    })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ApiResponseDto<Void>> delete(@Parameter(description = "ID of the book to be removed") @PathVariable Long id) {
-        return bookService.delete(id);
+    public void delete(@Parameter(description = "ID of the book to be removed") @PathVariable Long id) {
+        bookService.delete(id);
     }
 }

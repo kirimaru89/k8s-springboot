@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.utils;
+package com.vietinbank.kconsumer.utils;
 
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;

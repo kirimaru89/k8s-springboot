@@ -31,7 +31,9 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 
@@ -94,5 +96,23 @@ public class RedisConfig implements CachingConfigurer {
 
         final Cache booksCache = cacheManager.getCache("books");
         cacheMetricsRegistrar.bindCacheToRegistry(booksCache);
+    }
+
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        int booksTtl = 10;
+        int defaultTtl = 30;
+
+        // Define TTLs per cache name
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+
+        cacheConfigurations.put("books", RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofSeconds(booksTtl)));
+
+        return RedisCacheManager.builder(redisConnectionFactory)
+            .withInitialCacheConfigurations(cacheConfigurations)
+            .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(defaultTtl))) // Fallback TTL
+            .build();
     }
 }

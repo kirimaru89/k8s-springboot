@@ -18,23 +18,19 @@ public class KafkaConsumerService {
     )
     public void listen(ConsumerRecord<String, String> record) {
         String transactionId = record.key() != null ? record.key() : "<null>";
-        
+
         try {
-            log.info("Received message from topic {}, partition {}, offset {}: {}",
-                    record.topic(), record.partition(), record.offset(), record.value());
-            
-            // Process the message here
-            // For now, just log it
+            log.info("Received message -> topic={}, partition={}, offset={}, key={}, value={}",
+                    record.topic(), record.partition(), record.offset(), transactionId, record.value());
+
             processTransactionIdempotently(transactionId, record.value());
-            
-            // Acknowledge the message
-            // acknowledgment.acknowledge();
+
             log.info("Successfully processed message with key {}", transactionId);
-            
+
         } catch (Exception e) {
-            log.error("Error processing message with key {}: {}", transactionId, e.getMessage(), e);
-            // Don't acknowledge - the message will be retried by the container's error handler
-            throw e;
+            log.error("Error processing message. topic={}, partition={}, offset={}, key={}, error={}",
+                    record.topic(), record.partition(), record.offset(), transactionId, e.getMessage(), e);
+            throw e; // container will retry
         }
     }
 

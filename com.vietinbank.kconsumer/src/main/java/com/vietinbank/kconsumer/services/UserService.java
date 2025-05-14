@@ -1,7 +1,6 @@
-package com.vietinbank.kproducer.services;
+package com.vietinbank.kconsumer.services;
 
-import com.vietinbank.kproducer.dto.response.ApiResponseDto;
-import com.vietinbank.kproducer.common.enums.ResponseCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,12 +8,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.vietinbank.kproducer.dto.request.user.LoginRequestDto;
-import com.vietinbank.kproducer.dto.request.user.RegisterRequestDto;
-import com.vietinbank.kproducer.dto.response.user.LoginResponseDto;
-import com.vietinbank.kproducer.models.User;
-import com.vietinbank.kproducer.repositories.UserRepository;
-import com.vietinbank.kproducer.security.JwtUtil;
+import com.vietinbank.kconsumer.dto.request.user.LoginRequestDto;
+import com.vietinbank.kconsumer.dto.request.user.RegisterRequestDto;
+import com.vietinbank.kconsumer.dto.response.user.LoginResponseDto;
+import com.vietinbank.kconsumer.models.User;
+import com.vietinbank.kconsumer.repositories.UserRepository;
+import com.vietinbank.kconsumer.security.JwtUtil;
 
 @Service
 public class UserService {
@@ -29,31 +28,31 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    public ResponseEntity<ApiResponseDto<Void>> register(RegisterRequestDto request) {
+    public ResponseEntity<Void> register(RegisterRequestDto request) {
         boolean checkUsernameExists = userRepository.existsByUsername(request.getUsername());
         if (checkUsernameExists) {
-            return ApiResponseDto.error(ResponseCode.BAD_REQUEST, String.format("Username %s already exists", request.getUsername()));
+            return ResponseEntity.badRequest().build();
         }
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
-        return ApiResponseDto.success(null);
+        return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<ApiResponseDto<LoginResponseDto>> login(LoginRequestDto request) {
+    public ResponseEntity<LoginResponseDto> login(LoginRequestDto request) {
         User user = userRepository.findByUsername(request.getUsername()).orElse(null);
         if (user == null) {
-            return ApiResponseDto.error(ResponseCode.BAD_REQUEST, String.format("Username %s not exists", request.getUsername()));
+            return ResponseEntity.badRequest().build();
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ApiResponseDto.error(ResponseCode.UNAUTHORIZED, "Incorrect password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String token = jwtUtil.generateToken(user.getUsername());
 
-        return ApiResponseDto.success(new LoginResponseDto(token));
+        return ResponseEntity.ok(new LoginResponseDto(token));
     }
 
     public String getCurrentUsername() {

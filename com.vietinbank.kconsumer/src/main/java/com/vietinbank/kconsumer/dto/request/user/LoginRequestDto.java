@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.dto.request.user;
+package com.vietinbank.kconsumer.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 

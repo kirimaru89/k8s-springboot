@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.dto.response.user;
+package com.vietinbank.kconsumer.dto.response.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;

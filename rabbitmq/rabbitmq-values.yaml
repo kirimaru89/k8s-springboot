@@ -1,0 +1,53 @@
+auth:
+  username: user
+  password: MySecurePassword123
+  existingPasswordSecret: ""  # leave blank since we're using inline password here
+
+extraEnvironmentVars:
+  RABBITMQ_LOGS: "-"
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 6
+  successThreshold: 1
+  exec:
+    command:
+      - /bin/bash
+      - -ec
+      - >
+        curl -f --user user:MySecurePassword123 http://127.0.0.1:15672/api/health/checks/virtual-hosts
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+  exec:
+    command:
+      - /bin/bash
+      - -ec
+      - >
+        curl -f --user user:MySecurePassword123 http://127.0.0.1:15672/api/health/checks/local-alarms
+
+service:
+  type: ClusterIP
+  port: 5672
+  nodePort: null
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 250m
+  limits:
+    memory: 384Mi
+    cpu: 375m

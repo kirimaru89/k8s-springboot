@@ -108,6 +108,8 @@ public class BookService {
 
     @Cacheable(value = "books", key = "#id")
     public BookResponseDto get(Long id) {
+        System.out.println("Getting book with id: " + id);
+        // log.info("Getting book with id: {}", id);
         Book book = bookRepository.findById(id).orElse(null);
 
         if (book == null) {

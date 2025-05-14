@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.controllers;
+package com.vietinbank.kconsumer.controllers;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vietinbank.kproducer.dto.request.user.LoginRequestDto;
-import com.vietinbank.kproducer.dto.request.user.RegisterRequestDto;
-import com.vietinbank.kproducer.security.JwtUtil;
-import com.vietinbank.kproducer.services.LoggingService;
-import com.vietinbank.kproducer.services.UserService;
-import com.vietinbank.kproducer.dto.response.ApiResponseDto;
+import com.vietinbank.kconsumer.dto.request.user.LoginRequestDto;
+import com.vietinbank.kconsumer.dto.request.user.RegisterRequestDto;
+import com.vietinbank.kconsumer.security.JwtUtil;
+import com.vietinbank.kconsumer.services.LoggingService;
+import com.vietinbank.kconsumer.services.UserService;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
@@ -40,7 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDto<Void>> register(@RequestBody RegisterRequestDto request) {
+    public ResponseEntity<Void> register(@RequestBody RegisterRequestDto request) {
         return userService.register(request);
     }
 

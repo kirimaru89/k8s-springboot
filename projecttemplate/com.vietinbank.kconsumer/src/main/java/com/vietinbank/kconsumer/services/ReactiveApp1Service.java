@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.services;
+package com.vietinbank.kconsumer.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

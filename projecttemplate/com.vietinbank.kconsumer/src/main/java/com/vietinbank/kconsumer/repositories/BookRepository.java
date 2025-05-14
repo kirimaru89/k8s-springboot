@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.repositories;
+package com.vietinbank.kconsumer.repositories;
 
 import java.util.Optional;
 
@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import com.vietinbank.kproducer.models.Book;
-import com.vietinbank.kproducer.models.User;
+import com.vietinbank.kconsumer.models.Book;
+import com.vietinbank.kconsumer.models.User;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book> {

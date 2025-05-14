@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.config;
+package com.vietinbank.kconsumer.config;
 
 import javax.sql.DataSource;
 

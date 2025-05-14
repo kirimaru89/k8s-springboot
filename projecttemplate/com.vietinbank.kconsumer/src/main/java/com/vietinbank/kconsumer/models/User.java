@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.models;
+package com.vietinbank.kconsumer.models;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

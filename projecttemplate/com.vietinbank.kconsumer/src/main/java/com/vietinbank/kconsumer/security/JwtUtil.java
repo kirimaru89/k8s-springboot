@@ -1,4 +1,4 @@
-package com.vietinbank.kproducer.security;
+package com.vietinbank.kconsumer.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

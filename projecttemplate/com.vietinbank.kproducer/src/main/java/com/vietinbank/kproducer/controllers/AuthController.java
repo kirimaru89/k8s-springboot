@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.vietinbank.kproducer.dto.request.user.LoginRequestDto;
 import com.vietinbank.kproducer.dto.request.user.RegisterRequestDto;
+import com.vietinbank.kproducer.dto.response.user.LoginResponseDto;
 import com.vietinbank.kproducer.security.JwtUtil;
 import com.vietinbank.kproducer.services.LoggingService;
 import com.vietinbank.kproducer.services.UserService;
-import com.vietinbank.kproducer.dto.response.ApiResponseDto;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
@@ -40,23 +40,18 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDto<Void>> register(@RequestBody RegisterRequestDto request) {
+    public ResponseEntity<Void> register(@RequestBody RegisterRequestDto request) {
         return userService.register(request);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequestDto request) {
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
         loggingService.logInfo("Bắt đầu xử lý đăng nhập cho user: " + request.getUsername());
-        
-        // Simulate login processing
-        String token = jwtUtil.generateToken(request.getUsername());
-                
-        loggingService.logInfo("Đã tạo token cho user: " + request.getUsername());
-        return token;
+        return userService.login(request);
     }
     
     @PostMapping("/logout")
-    public String logout(@RequestHeader("Authorization") String authHeader) {
-        return "Logged out successfully";
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok("Logged out successfully");
     }
 }

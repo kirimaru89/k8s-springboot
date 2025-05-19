@@ -114,6 +114,7 @@ public class RedisConfig implements CachingConfigurer {
             .withInitialCacheConfigurations(cacheConfigurations)
             .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(defaultTtl))) // Fallback TTL
+            .enableStatistics()
             .build();
     }
 

@@ -28,8 +28,16 @@ helm repo add hashicorp https://helm.releases.hashicorp.com
 helm repo update
 
 helm install my-vault hashicorp/vault \
+  --namespace monitoring \
+  --create-namespace \
   --set "injector.enabled=true" \
   --set "server.dev.enabled=true"
+
+
+helm uninstall my-vault --namespace monitoring
+
+# for docker only
+docker pull hashicorp/vault
 ```
 
 ---

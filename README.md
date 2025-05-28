@@ -6,6 +6,8 @@ helm install my-prometheus prometheus-community/prometheus --version 27.7.1
 # create grafana
 kubectl apply -f grafana/deployment.yaml
 
+kubectl apply -f mysql/mysql.yaml
+
 # create tempo
 helm install my-tempo grafana/tempo -f tempo/values.yaml -n monitoring
 helm upgrade my-tempo grafana/tempo -f tempo/values.yaml -n monitoring
@@ -209,6 +211,7 @@ vault kv put secret/spring-app-1/kubernetes \
 vault kv get secret/spring-app-1/kubernetes
 
 # policy file
+vi spring-app-1-kubernetes.hcl
 path "secret/data/spring-app-1/kubernetes" {
   capabilities = ["read"]
 }

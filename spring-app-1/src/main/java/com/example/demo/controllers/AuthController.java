@@ -101,8 +101,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest request) {
-        VaultResponse response = vaultTemplate.read("secret/data/spring-app-1");
-        loggingService.logInfo("🧪 Raw Vault Response: " + response.getData());
+        // VaultResponse response = vaultTemplate.read("secret/data/spring-app-1");
+        // loggingService.logInfo("🧪 Raw Vault Response: " + response.getData());
 
         // COUNTER - Track total login attempts 
         loginAttemptsCounter.increment();

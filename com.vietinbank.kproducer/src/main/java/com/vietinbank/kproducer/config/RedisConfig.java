@@ -15,6 +15,7 @@ import io.lettuce.core.ClientOptions;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.tracing.MicrometerTracing;
 import io.micrometer.observation.ObservationRegistry;
+import io.lettuce.core.resource.Delay;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -33,8 +34,6 @@ import io.lettuce.core.ClientOptions;
 import io.lettuce.core.ClientOptions.Builder;
 import io.lettuce.core.ClientOptions.DisconnectedBehavior;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
-
-
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -59,6 +58,7 @@ public class RedisConfig implements CachingConfigurer {
         MicrometerTracing micrometerTracing = new MicrometerTracing(observationRegistry, "redis", true);
         return ClientResources.builder()
                 .tracing(micrometerTracing)
+                .reconnectDelay(Delay.constant(Duration.ofSeconds(30)))
                 .build();
     }
 
@@ -66,6 +66,7 @@ public class RedisConfig implements CachingConfigurer {
     public LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer() {
         return builder -> builder
             .clientOptions(ClientOptions.builder()
+                .pingBeforeActivateConnection(true)
                 .autoReconnect(true)
                 .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
                 .build());

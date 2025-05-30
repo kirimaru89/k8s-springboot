@@ -74,7 +74,7 @@ vault kv put secret/spring-app-3/db \
   spring.datasource.url="jdbc:postgresql://my-postgresql:5432/k8spostgres" \
   spring.datasource.driver-class-name="org.postgresql.Driver" \
   spring.datasource.username="postgres" \
-  spring.datasource.password="QZAGDh0Fya"
+  spring.datasource.password="Q9mn6pUr0i"
 ```
 
 ---

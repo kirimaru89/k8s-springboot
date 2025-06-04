@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-app-5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-app-5
+  template:
+    metadata:
+      labels:
+        app: spring-app-5
+      # Add annotations for Prometheus scraping
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+      - name: spring-app-5
+        image: spring-app-5:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-app-5-service
+spec:
+  selector:
+    app: spring-app-5
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    # nodePort: 30080 # Uncomment and set if you want a specific NodePort
+  type: NodePort  # Changed from LoadBalancer to NodePort for local development
